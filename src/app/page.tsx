@@ -21,6 +21,13 @@ export default function HomePage() {
 
           <nav aria-label="Navegación principal" className="flex items-center gap-3">
             <Link
+              href="/plans"
+              className="min-h-[44px] px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              id="nav-plans-link"
+            >
+              Planes
+            </Link>
+            <Link
               href="/login"
               className="min-h-[44px] px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
             >

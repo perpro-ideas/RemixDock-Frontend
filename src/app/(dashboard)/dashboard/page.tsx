@@ -17,6 +17,7 @@ import {
   Compass,
   FolderHeart,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 
 const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
@@ -104,6 +105,17 @@ export default function DashboardPage() {
             <span className={roleInfo.className}>
               {roleInfo.label}
             </span>
+
+            {user.role === 'ADMIN' && (
+              <Link
+                href="/admin/plans"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 min-h-[44px]"
+                id="admin-plans-header-btn"
+              >
+                <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                <span>Administrar planes</span>
+              </Link>
+            )}
 
             <Link
               href="/profile"
@@ -245,6 +257,36 @@ export default function DashboardPage() {
                   Accede a tus pistas descargadas y solicitudes activas.
                 </p>
               </div>
+
+              <Link
+                href="/plans"
+                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                id="explore-plans-link"
+              >
+                <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                  <Sparkles className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                  <span>Planes de Suscripción</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Membresías con acceso a stems exclusivos y descargas directas.
+                </p>
+              </Link>
+
+              {user.role === 'ADMIN' && (
+                <Link
+                  href="/admin/plans"
+                  className="block p-4 rounded-xl bg-violet-50/70 hover:bg-violet-100/70 border border-violet-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                  id="admin-plans-card-link"
+                >
+                  <div className="flex items-center gap-2 text-violet-900 font-semibold">
+                    <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                    <span>Administración de Planes</span>
+                  </div>
+                  <p className="text-violet-700 leading-relaxed">
+                    Gestiona el catálogo de membresías, precios y visibilidad.
+                  </p>
+                </Link>
+              )}
             </CardContent>
 
             <CardFooter className="border-t border-slate-100">
