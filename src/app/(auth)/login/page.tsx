@@ -14,6 +14,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isJustRegistered = searchParams.get('registered') === 'true';
+  const isPasswordChanged = searchParams.get('passwordChanged') === 'true';
 
   const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
@@ -88,6 +89,15 @@ function LoginForm() {
               <AlertTitle>¡Registro exitoso!</AlertTitle>
               <AlertDescription>
                 Tu cuenta ha sido creada correctamente. Ingresa tus credenciales para acceder.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isPasswordChanged && !errorMessage && (
+            <Alert variant="success">
+              <AlertTitle>Contraseña actualizada</AlertTitle>
+              <AlertDescription>
+                Tu contraseña se actualizó correctamente. Por seguridad, ingresa nuevamente.
               </AlertDescription>
             </Alert>
           )}

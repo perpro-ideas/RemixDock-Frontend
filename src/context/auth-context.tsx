@@ -13,6 +13,7 @@ export interface AuthContextType {
   register: (payload: RegisterPayload) => Promise<User>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
+  updateUser: (partialUser: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -137,6 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [accessToken]);
 
+  /**
+   * Actualización inmediata en memoria del usuario autenticado (ej. cambio de username).
+   */
+  const updateUser = useCallback((partialUser: Partial<User>): void => {
+    setUser((prev) => (prev ? { ...prev, ...partialUser } : null));
+  }, []);
+
   const value: AuthContextType = {
     user,
     accessToken,
@@ -146,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     logout,
     refreshSession,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

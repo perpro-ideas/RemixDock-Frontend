@@ -30,3 +30,16 @@ export interface ApiErrorResponse {
   message: string | string[];
   error?: string;
 }
+
+export interface UpdateProfilePayload {
+  username: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
