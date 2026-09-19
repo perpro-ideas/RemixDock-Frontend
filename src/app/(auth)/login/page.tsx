@@ -15,6 +15,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const isJustRegistered = searchParams.get('registered') === 'true';
   const isPasswordChanged = searchParams.get('passwordChanged') === 'true';
+  const isResetSuccess = searchParams.get('resetSuccess') === 'true';
 
   const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
@@ -102,6 +103,15 @@ function LoginForm() {
             </Alert>
           )}
 
+          {isResetSuccess && !errorMessage && (
+            <Alert variant="success" id="reset-success-alert">
+              <AlertTitle>Contraseña restablecida</AlertTitle>
+              <AlertDescription>
+                Tu contraseña ha sido restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva credencial.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {errorMessage && (
             <Alert variant="error">
               <AlertTitle>{errorMessage}</AlertTitle>
@@ -134,6 +144,16 @@ function LoginForm() {
             autoComplete="current-password"
             disabled={isSubmitting}
           />
+
+          <div className="flex items-center justify-end -mt-1">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded py-1 min-h-[32px] inline-flex items-center"
+              id="forgot-password-link"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
           <Button
             type="submit"
