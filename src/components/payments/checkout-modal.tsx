@@ -81,11 +81,11 @@ export function CheckoutModal({
       }}
     >
       <div
-        className="relative w-full max-w-lg bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col my-auto"
         id="checkout-modal-content"
       >
         {/* Encabezado del Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/60 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
               <Disc3 className="w-4 h-4" aria-hidden="true" />
@@ -111,7 +111,7 @@ export function CheckoutModal({
 
         {/* Vista 1: Resumen y Pasarela de Pago */}
         {!isSuccess ? (
-          <div className="p-6 space-y-6" id="checkout-summary-view">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto max-h-[calc(90vh-65px)]" id="checkout-summary-view">
             <div className="space-y-1">
               <h2
                 id="checkout-modal-title"
@@ -201,8 +201,8 @@ export function CheckoutModal({
           </div>
         ) : (
           /* Vista 2: Confirmación de Pago Exitoso */
-          <div className="p-8 text-center space-y-6" id="checkout-success-view">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-sm animate-in zoom-in-50 duration-300">
+          <div className="p-4 sm:p-8 text-center space-y-4 sm:space-y-6 overflow-y-auto max-h-[calc(90vh-65px)]" id="checkout-success-view">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto shadow-sm animate-in zoom-in-50 duration-300">
               <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
             </div>
 

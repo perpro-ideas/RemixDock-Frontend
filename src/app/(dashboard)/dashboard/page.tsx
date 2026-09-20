@@ -135,21 +135,21 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
       {/* Navigation Header */}
       <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white">
-              <Disc3 className="w-5 h-5" aria-hidden="true" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0">
+              <Disc3 className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             </div>
-            <span className="font-bold text-lg tracking-tight text-slate-900">
-              Remix<span className="text-emerald-600">Dock</span>{' '}
-              <span className="text-xs text-slate-400 font-normal ml-1 border-l border-slate-200 pl-2">
+            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">
+              Remix<span className="text-emerald-600">Dock</span>
+              <span className="hidden sm:inline text-xs text-slate-400 font-normal ml-1 border-l border-slate-200 pl-2">
                 Studio
               </span>
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-end">
-            <span className={roleInfo.className}>
+          <div className="flex items-center gap-1.5 sm:gap-3 justify-end">
+            <span className={`hidden sm:inline-flex ${roleInfo.className}`}>
               {roleInfo.label}
             </span>
 
@@ -159,8 +159,9 @@ export default function DashboardPage() {
             {user.role === 'ADMIN' && (
               <Link
                 href="/admin/plans"
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 min-h-[44px]"
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 min-h-[44px] min-w-[44px]"
                 id="admin-plans-header-btn"
+                aria-label="Administrar planes"
               >
                 <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
                 <span className="hidden sm:inline">Administrar planes</span>
@@ -169,8 +170,9 @@ export default function DashboardPage() {
 
             <Link
               href="/profile"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
               id="edit-profile-header-btn"
+              aria-label="Editar perfil"
             >
               <Settings className="w-4 h-4 text-slate-500" aria-hidden="true" />
               <span className="hidden sm:inline">Editar perfil</span>
@@ -181,8 +183,9 @@ export default function DashboardPage() {
               size="sm"
               onClick={handleLogout}
               isLoading={isLoggingOut}
-              loadingText="Cerrando sesión..."
-              className="gap-2"
+              loadingText=""
+              className="gap-2 min-h-[44px] min-w-[44px] px-2.5 sm:px-3"
+              aria-label="Cerrar sesión"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Cerrar sesión</span>
@@ -192,34 +195,34 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* Welcome Banner: Minimalist Flat SaaS */}
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-sm">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             ¡Hola de nuevo, {user.username}!
           </h1>
-          <p className="text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
             Administra tu cuenta, revisa tus remixes y accede a tu biblioteca musical.
           </p>
         </section>
 
         {/* Billetera y Balance de Créditos (REM-71) */}
         <section aria-labelledby="credits-section-title" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <h2 id="credits-section-title" className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+              <h2 id="credits-section-title" className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" aria-hidden="true" />
                 <span>Billetera y Balance de Créditos</span>
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Gestiona tus créditos para la descarga de pistas, stems multipista y pedidos exclusivos.
+              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                Gestiona tus créditos para la descarga de pistas y stems multipista.
               </p>
             </div>
             <button
               type="button"
               onClick={handleManualRefetch}
               disabled={isRefreshingCredits || isCreditsLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px] shrink-0"
               aria-label="Actualizar balance de créditos"
               id="refresh-credits-btn"
             >
@@ -244,7 +247,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight" id="dashboard-credits-balance">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight" id="dashboard-credits-balance">
                     {isCreditsLoading ? '...' : balance}
                   </span>
                   <span className="text-sm font-semibold text-emerald-700">
@@ -306,60 +309,111 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto" id="credits-history-table">
-                    <table className="w-full text-left border-collapse" aria-label="Historial de movimientos de créditos">
-                      <thead>
-                        <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-                          <th scope="col" className="py-2.5 px-3">Concepto</th>
-                          <th scope="col" className="py-2.5 px-3">Tipo</th>
-                          <th scope="col" className="py-2.5 px-3">Fecha</th>
-                          <th scope="col" className="py-2.5 px-3 text-right">Monto</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs">
-                        {history.map((entry) => {
-                          const isPositive = entry.amount > 0;
-                          return (
-                            <tr key={entry.id} className="hover:bg-slate-50/70 transition-colors">
-                              <td className="py-3 px-3 font-medium text-slate-900">
-                                <div className="flex items-center gap-2">
+                  <>
+                    {/* Desktop View: Table */}
+                    <div className="overflow-x-auto hidden sm:block" id="credits-history-table">
+                      <table className="w-full text-left border-collapse" aria-label="Historial de movimientos de créditos">
+                        <thead>
+                          <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+                            <th scope="col" className="py-2.5 px-3">Concepto</th>
+                            <th scope="col" className="py-2.5 px-3">Tipo</th>
+                            <th scope="col" className="py-2.5 px-3">Fecha</th>
+                            <th scope="col" className="py-2.5 px-3 text-right">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-xs">
+                          {history.map((entry) => {
+                            const isPositive = entry.amount > 0;
+                            return (
+                              <tr key={entry.id} className="hover:bg-slate-50/70 transition-colors">
+                                <td className="py-3 px-3 font-medium text-slate-900">
+                                  <div className="flex items-center gap-2">
+                                    {isPositive ? (
+                                      <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                                        <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                                      </div>
+                                    ) : (
+                                      <div className="w-6 h-6 rounded-md bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0">
+                                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
+                                      </div>
+                                    )}
+                                    <span className="truncate max-w-[220px] sm:max-w-xs">{entry.description}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                                  <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200/60">
+                                    {movementTypeLabels[entry.type] || entry.type}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                                  {formatMovementDate(entry.createdAt)}
+                                </td>
+                                <td className="py-3 px-3 text-right whitespace-nowrap">
                                   {isPositive ? (
-                                    <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0">
-                                      <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                                    </div>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                      +{entry.amount} cr.
+                                    </span>
                                   ) : (
-                                    <div className="w-6 h-6 rounded-md bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0">
-                                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
-                                    </div>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                      {entry.amount} cr.
+                                    </span>
                                   )}
-                                  <span className="truncate max-w-[220px] sm:max-w-xs">{entry.description}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile View: Stacked Cards */}
+                    <div className="block sm:hidden space-y-2.5" id="credits-history-mobile-list">
+                      {history.map((entry) => {
+                        const isPositive = entry.amount > 0;
+                        return (
+                          <div
+                            key={entry.id}
+                            className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center justify-between gap-3"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {isPositive ? (
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                                  <ArrowDownLeft className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                                 </div>
-                              </td>
-                              <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                                <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200/60">
-                                  {movementTypeLabels[entry.type] || entry.type}
+                              ) : (
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0">
+                                  <ArrowUpRight className="w-4 h-4 text-slate-600" aria-hidden="true" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-slate-900 truncate">
+                                  {entry.description}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5 flex-wrap">
+                                  <span className="font-medium text-slate-600">
+                                    {movementTypeLabels[entry.type] || entry.type}
+                                  </span>
+                                  <span>•</span>
+                                  <span>{formatMovementDate(entry.createdAt)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              {isPositive ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                  +{entry.amount} cr.
                                 </span>
-                              </td>
-                              <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                                {formatMovementDate(entry.createdAt)}
-                              </td>
-                              <td className="py-3 px-3 text-right whitespace-nowrap">
-                                {isPositive ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                                    +{entry.amount} cr.
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
-                                    {entry.amount} cr.
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                  {entry.amount} cr.
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>

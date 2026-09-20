@@ -185,43 +185,46 @@ function PlansContent() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
       {/* Public Navigation Header */}
       <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-slate-900 font-bold text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
+            className="flex items-center gap-2 sm:gap-2.5 text-slate-900 font-bold text-base sm:text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm">
-              <Disc3 className="w-5 h-5 animate-spin-slow" aria-hidden="true" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
+              <Disc3 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin-slow" aria-hidden="true" />
             </div>
             <span>
               Remix<span className="text-emerald-600">Dock</span>
             </span>
           </Link>
 
-          <nav className="flex items-center gap-3">
+          <nav className="flex items-center gap-1.5 sm:gap-3">
             <Link
               href="/"
-              className="min-h-[44px] px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="min-h-[44px] min-w-[44px] px-2 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              aria-label="Volver al inicio"
             >
-              <ArrowLeft className="w-4 h-4 mr-1.5" aria-hidden="true" />
-              <span>Inicio</span>
+              <ArrowLeft className="w-4 h-4 sm:mr-1.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Inicio</span>
             </Link>
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
                 <CreditsBadge />
                 <Link
                   href="/dashboard"
-                  className="min-h-[44px] px-3.5 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="min-h-[44px] min-w-[44px] px-2 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   id="plans-dashboard-link"
+                  aria-label="Ir al panel del estudio"
                 >
-                  Dashboard
+                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="sm:hidden">Estudio</span>
                 </Link>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="min-h-[44px] px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               >
                 Iniciar sesión
               </Link>
@@ -231,7 +234,7 @@ function PlansContent() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10 sm:space-y-12 overflow-x-hidden">
         <section className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
@@ -243,14 +246,14 @@ function PlansContent() {
             <span className="text-emerald-600">DJs y Productores</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-sm sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
             Elige la membresía que mejor se adapte a tu flujo de trabajo en cabina y estudio. Accede a stems multipista, descargas exclusivas y peticiones de remixes.
           </p>
 
           {/* Billing filter tabs */}
-          <div className="flex items-center justify-center pt-4">
+          <div className="w-full flex justify-center pt-4 px-1 overflow-x-auto no-scrollbar">
             <div
-              className="inline-flex p-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm"
+              className="inline-flex max-w-full overflow-x-auto p-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm no-scrollbar whitespace-nowrap"
               role="tablist"
               aria-label="Filtro de periodicidad de facturación"
             >
@@ -259,7 +262,7 @@ function PlansContent() {
                 role="tab"
                 aria-selected={selectedType === 'ALL'}
                 onClick={() => setSelectedType('ALL')}
-                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 shrink-0 ${
                   selectedType === 'ALL'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -274,7 +277,7 @@ function PlansContent() {
                 role="tab"
                 aria-selected={selectedType === 'MONTHLY'}
                 onClick={() => setSelectedType('MONTHLY')}
-                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 shrink-0 ${
                   selectedType === 'MONTHLY'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -289,7 +292,7 @@ function PlansContent() {
                 role="tab"
                 aria-selected={selectedType === 'YEARLY'}
                 onClick={() => setSelectedType('YEARLY')}
-                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 shrink-0 ${
                   selectedType === 'YEARLY'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'

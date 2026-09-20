@@ -223,8 +223,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
       {/* Top Header */}
       <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
@@ -232,13 +232,14 @@ export default function ProfilePage() {
               id="back-to-dashboard-btn"
             >
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Volver al estudio</span>
+              <span className="hidden sm:inline">Volver al estudio</span>
+              <span className="sm:hidden">Volver</span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <CreditsBadge />
-            <span className={roleInfo.className}>
+            <span className={`hidden sm:inline-flex ${roleInfo.className}`}>
               {roleInfo.label}
             </span>
           </div>
@@ -246,7 +247,7 @@ export default function ProfilePage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Page Title & Intro */}
         <section className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">

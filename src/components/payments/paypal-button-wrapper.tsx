@@ -96,19 +96,19 @@ export function PayPalButtonWrapper({
         id="paypal-checkout-button"
         onClick={handlePayment}
         disabled={disabled || isProcessing}
-        className="w-full min-h-[44px] px-4 py-3 rounded-xl font-bold text-sm bg-[#FFC439] hover:bg-[#F2BA36] active:bg-[#E0AA2B] text-[#003087] transition-all shadow-sm flex items-center justify-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full min-h-[44px] px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#FFC439] hover:bg-[#F2BA36] active:bg-[#E0AA2B] text-[#003087] transition-all shadow-sm flex items-center justify-center gap-2 sm:gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
         aria-label={`Pagar con PayPal $${amount.toFixed(2)} ${currency}`}
       >
         {isProcessing ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin text-[#003087]" aria-hidden="true" />
-            <span>Procesando pago con PayPal...</span>
+            <span className="truncate">Procesando pago con PayPal...</span>
           </>
         ) : (
           <>
             {/* Logotipo vectorial estilizado de PayPal */}
             <svg
-              className="w-5 h-5 text-[#003087]"
+              className="w-4 h-4 sm:w-5 sm:h-5 text-[#003087] shrink-0"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
@@ -119,8 +119,8 @@ export function PayPalButtonWrapper({
                 fill="#0079C1"
               />
             </svg>
-            <span className="font-extrabold tracking-tight">PayPal</span>
-            <span className="text-xs font-semibold text-slate-800 ml-1">
+            <span className="font-extrabold tracking-tight shrink-0">PayPal</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-800 ml-0.5 sm:ml-1 truncate">
               — Pagar ${amount.toFixed(2)} {currency}
             </span>
           </>

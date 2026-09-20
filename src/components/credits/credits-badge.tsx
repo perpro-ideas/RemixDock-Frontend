@@ -24,10 +24,10 @@ export function CreditsBadge({ className = '', showIcon = true }: CreditsBadgePr
       {showIcon && (
         <Coins className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
       )}
-      <span className="tabular-nums font-bold">
+      <span className="tabular-nums font-bold" id="credits-badge-balance">
         {isLoading ? '...' : balance}
       </span>
-      <span className="text-emerald-700 font-medium">
+      <span className="text-emerald-700 font-medium hidden sm:inline" id="credits-badge-text">
         {balance === 1 ? 'crédito' : 'créditos'}
       </span>
       <Sparkles className="w-3 h-3 text-emerald-500/80 ml-0.5" aria-hidden="true" />
