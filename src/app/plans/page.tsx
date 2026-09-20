@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
+import { useAuth } from '@/context/auth-context';
+import { CreditsBadge } from '@/components/credits/credits-badge';
 import { Plan, PlanType } from '@/types/plan.types';
 import {
   Disc3,
@@ -97,6 +99,7 @@ const fallbackPlans: Plan[] = [
 ];
 
 export default function PlansPage() {
+  const { isAuthenticated } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -168,12 +171,25 @@ export default function PlansPage() {
               <span>Inicio</span>
             </Link>
 
-            <Link
-              href="/login"
-              className="min-h-[44px] px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            >
-              Iniciar sesión
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2.5">
+                <CreditsBadge />
+                <Link
+                  href="/dashboard"
+                  className="min-h-[44px] px-3.5 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  id="plans-dashboard-link"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="min-h-[44px] px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                Iniciar sesión
+              </Link>
+            )}
           </nav>
         </div>
       </header>

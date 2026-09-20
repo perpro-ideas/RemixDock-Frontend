@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   Lock,
 } from 'lucide-react';
+import { CreditsBadge } from '@/components/credits/credits-badge';
+
 
 const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
   ADMIN: {
@@ -235,6 +237,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <CreditsBadge />
             <span className={roleInfo.className}>
               {roleInfo.label}
             </span>

@@ -4,9 +4,12 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { useCredits } from '@/hooks/use-credits';
+import { CreditsBadge } from '@/components/credits/credits-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Role } from '@/types/auth.types';
+import { CreditEntryType } from '@/types/credits.types';
 import {
   Disc3,
   LogOut,
@@ -18,6 +21,11 @@ import {
   FolderHeart,
   Settings,
   Sparkles,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  RefreshCw,
+  History,
 } from 'lucide-react';
 
 const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
@@ -35,10 +43,40 @@ const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
   },
 };
 
+const movementTypeLabels: Record<CreditEntryType, string> = {
+  PLAN_SUBSCRIPTION: 'Suscripción',
+  TOPUP_PURCHASE: 'Recarga de saldo',
+  REMIX_DOWNLOAD: 'Descarga de pista',
+  REMIX_REQUEST: 'Petición exclusiva',
+  ADMIN_ADJUSTMENT: 'Ajuste de saldo',
+};
+
+function formatMovementDate(dateStr: string): string {
+  try {
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(dateStr));
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const {
+    balance,
+    history,
+    isLoading: isCreditsLoading,
+    refetch: refetchCredits,
+  } = useCredits();
+
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isRefreshingCredits, setIsRefreshingCredits] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -55,6 +93,15 @@ export default function DashboardPage() {
       router.push('/login');
     } finally {
       setIsLoggingOut(false);
+    }
+  };
+
+  const handleManualRefetch = async () => {
+    try {
+      setIsRefreshingCredits(true);
+      await refetchCredits();
+    } finally {
+      setIsRefreshingCredits(false);
     }
   };
 
@@ -101,10 +148,13 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-end">
             <span className={roleInfo.className}>
               {roleInfo.label}
             </span>
+
+            {/* Header Credits Badge */}
+            <CreditsBadge />
 
             {user.role === 'ADMIN' && (
               <Link
@@ -113,7 +163,7 @@ export default function DashboardPage() {
                 id="admin-plans-header-btn"
               >
                 <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
-                <span>Administrar planes</span>
+                <span className="hidden sm:inline">Administrar planes</span>
               </Link>
             )}
 
@@ -123,7 +173,7 @@ export default function DashboardPage() {
               id="edit-profile-header-btn"
             >
               <Settings className="w-4 h-4 text-slate-500" aria-hidden="true" />
-              <span>Editar perfil</span>
+              <span className="hidden sm:inline">Editar perfil</span>
             </Link>
 
             <Button
@@ -135,7 +185,7 @@ export default function DashboardPage() {
               className="gap-2"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
-              <span>Cerrar sesión</span>
+              <span className="hidden sm:inline">Cerrar sesión</span>
             </Button>
           </div>
         </div>
@@ -151,6 +201,169 @@ export default function DashboardPage() {
           <p className="text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
             Administra tu cuenta, revisa tus remixes y accede a tu biblioteca musical.
           </p>
+        </section>
+
+        {/* Billetera y Balance de Créditos (REM-71) */}
+        <section aria-labelledby="credits-section-title" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 id="credits-section-title" className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+                <span>Billetera y Balance de Créditos</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Gestiona tus créditos para la descarga de pistas, stems multipista y pedidos exclusivos.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleManualRefetch}
+              disabled={isRefreshingCredits || isCreditsLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+              aria-label="Actualizar balance de créditos"
+              id="refresh-credits-btn"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 text-slate-500 ${isRefreshingCredits || isCreditsLoading ? 'animate-spin' : ''}`}
+                aria-hidden="true"
+              />
+              <span className="hidden sm:inline">Actualizar</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tarjeta de Saldo Destacado */}
+            <Card className="lg:col-span-1 flex flex-col justify-between border-slate-200/80" id="credits-balance-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Saldo disponible
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    Activo
+                  </span>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight" id="dashboard-credits-balance">
+                    {isCreditsLoading ? '...' : balance}
+                  </span>
+                  <span className="text-sm font-semibold text-emerald-700">
+                    {balance === 1 ? 'crédito disponible' : 'créditos disponibles'}
+                  </span>
+                </div>
+                <CardDescription className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Cada crédito te permite adquirir remixes inéditos y packs de stems directos de estudio.
+                </CardDescription>
+              </CardHeader>
+
+              <CardFooter className="pt-2 pb-5 border-t border-slate-100 flex flex-col gap-2">
+                <Link
+                  href="/plans"
+                  id="recharge-credits-btn"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+                >
+                  <Sparkles className="w-4 h-4" aria-hidden="true" />
+                  <span>Obtener más créditos</span>
+                </Link>
+                <p className="text-[11px] text-slate-400 text-center">
+                  Suscripciones mensuales o paquetes de recarga inmediata.
+                </p>
+              </CardFooter>
+            </Card>
+
+            {/* Historial de Movimientos Recientes */}
+            <Card className="lg:col-span-2 border-slate-200/80" id="credits-history-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <History className="w-4 h-4 text-slate-500" aria-hidden="true" />
+                    <span>Movimientos Recientes</span>
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-0.5">
+                    Historial de recargas de saldo y descargas de música.
+                  </CardDescription>
+                </div>
+                <span className="text-xs text-slate-400 font-medium">
+                  Últimos movimientos
+                </span>
+              </CardHeader>
+
+              <CardContent className="pt-0">
+                {history.length === 0 ? (
+                  <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200" id="empty-credits-history">
+                    <Wallet className="w-8 h-8 text-slate-400 mx-auto mb-2" aria-hidden="true" />
+                    <p className="text-sm font-semibold text-slate-700">Sin movimientos registrados</p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                      Aún no has realizado recargas ni descargas con créditos en tu cuenta.
+                    </p>
+                    <div className="mt-4">
+                      <Link
+                        href="/plans"
+                        className="inline-flex items-center text-xs font-semibold text-emerald-600 hover:text-emerald-700 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded min-h-[44px] px-2 py-1"
+                      >
+                        Ver planes y adquirir créditos →
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto" id="credits-history-table">
+                    <table className="w-full text-left border-collapse" aria-label="Historial de movimientos de créditos">
+                      <thead>
+                        <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+                          <th scope="col" className="py-2.5 px-3">Concepto</th>
+                          <th scope="col" className="py-2.5 px-3">Tipo</th>
+                          <th scope="col" className="py-2.5 px-3">Fecha</th>
+                          <th scope="col" className="py-2.5 px-3 text-right">Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {history.map((entry) => {
+                          const isPositive = entry.amount > 0;
+                          return (
+                            <tr key={entry.id} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="py-3 px-3 font-medium text-slate-900">
+                                <div className="flex items-center gap-2">
+                                  {isPositive ? (
+                                    <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                                      <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-6 h-6 rounded-md bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0">
+                                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
+                                    </div>
+                                  )}
+                                  <span className="truncate max-w-[220px] sm:max-w-xs">{entry.description}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                                <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200/60">
+                                  {movementTypeLabels[entry.type] || entry.type}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                                {formatMovementDate(entry.createdAt)}
+                              </td>
+                              <td className="py-3 px-3 text-right whitespace-nowrap">
+                                {isPositive ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                    +{entry.amount} cr.
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                    {entry.amount} cr.
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Profile Details & Quick Access Modules */}
