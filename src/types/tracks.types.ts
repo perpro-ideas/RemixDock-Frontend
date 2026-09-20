@@ -1,4 +1,13 @@
-export type StemType = 'DRUMS' | 'BASS' | 'SYNTH' | 'VOCALS' | 'FX' | 'OTHER';
+export type StemType =
+  | 'DRUMS'
+  | 'BASS'
+  | 'SYNTH'
+  | 'SYNTHS'
+  | 'VOCALS'
+  | 'INSTRUMENTS'
+  | 'FX'
+  | 'OTHER'
+  | string;
 
 export interface Genre {
   id: string;
@@ -30,7 +39,8 @@ export interface Track {
   bpm: number;
   musicalKey?: string; // Propiedad estándar del backend ej: "8A", "4A", "11B"
   key?: string; // Alias de clave Camelot para compatibilidad
-  duration: number; // Duración en segundos
+  durationSeconds?: number; // Duración en segundos retornada por el backend
+  duration?: number; // Alias de duración para compatibilidad
   previewUrl: string;
   coverUrl?: string;
   creditCost: number;
@@ -46,6 +56,13 @@ export interface PaginatedTracksResponse {
   total: number;
   page: number;
   totalPages: number;
+}
+
+export interface DownloadResponse {
+  downloadUrl: string;
+  costCredits: number;
+  isRedownload: boolean;
+  message: string;
 }
 
 export interface QueryTracksParams {
