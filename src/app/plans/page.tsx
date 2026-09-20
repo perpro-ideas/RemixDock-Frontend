@@ -38,68 +38,6 @@ const planTypeLabels: Record<PlanType, { label: string; className: string }> = {
   },
 };
 
-const fallbackPlans: Plan[] = [
-  {
-    id: 'plan-starter-monthly',
-    name: 'DJ Starter',
-    description: 'Acceso inicial para DJs que buscan pistas seleccionadas de alta calidad.',
-    type: 'MONTHLY',
-    price: 9.99,
-    durationDays: 30,
-    creditsIncluded: 15,
-    benefits: [
-      '15 descargas mensuales en formato WAV/FLAC',
-      'Acceso al catálogo general de remixes',
-      'Preescucha en streaming sin pérdidas',
-      'Soporte estándar por correo',
-    ],
-    canRequestRemix: false,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-pro-monthly',
-    name: 'DJ Pro Club',
-    description: 'El plan más popular para DJs residentes y productores activos.',
-    type: 'MONTHLY',
-    price: 19.99,
-    durationDays: 30,
-    creditsIncluded: 50,
-    benefits: [
-      '50 descargas mensuales en formato WAV/FLAC',
-      'Acceso ilimitado a stems multipista separados',
-      'Lanzamientos exclusivos 48 horas antes',
-      'Hasta 2 solicitudes mensuales de remixes',
-      'Soporte prioritario para cabina',
-    ],
-    canRequestRemix: true,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-elite-yearly',
-    name: 'Pro Producer Anual',
-    description: 'Ahorro máximo para estudios de producción y DJs de gira.',
-    type: 'YEARLY',
-    price: 189.99,
-    durationDays: 365,
-    creditsIncluded: 700,
-    benefits: [
-      '700 descargas anuales acumulables',
-      'Descarga ilimitada de stems y pistas acapella',
-      'Solicitud directa de remixes personalizados',
-      'Licencia comercial para sesiones en vivo',
-      'Atención preferente vía WhatsApp/Telegram',
-    ],
-    canRequestRemix: true,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 function PlansContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -121,20 +59,25 @@ function PlansContent() {
     async function loadPlans() {
       try {
         setIsLoading(true);
+        setErrorMessage(null);
         const data = await apiFetch<Plan[]>('/plans');
         if (isMounted) {
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             setPlans(data.filter((p) => p.isActive));
           } else {
-            setPlans(fallbackPlans);
+            setPlans([]);
           }
         }
       } catch (err) {
         if (isMounted) {
-          if (err instanceof ApiClientError && err.statusCode >= 500) {
-            setErrorMessage('El servidor de catálogo está experimentando demoras.');
+          if (err instanceof ApiClientError) {
+            setErrorMessage(err.message || 'No se pudieron cargar los planes de suscripción.');
+          } else if (err instanceof Error) {
+            setErrorMessage(err.message);
+          } else {
+            setErrorMessage('No se pudo conectar con el catálogo de planes.');
           }
-          setPlans(fallbackPlans);
+          setPlans([]);
         }
       } finally {
         if (isMounted) {
@@ -206,6 +149,14 @@ function PlansContent() {
             >
               <ArrowLeft className="w-4 h-4 sm:mr-1.5" aria-hidden="true" />
               <span className="hidden sm:inline">Inicio</span>
+            </Link>
+
+            <Link
+              href="/catalog"
+              className="min-h-[44px] px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              id="plans-catalog-link"
+            >
+              Catálogo
             </Link>
 
             {isAuthenticated ? (
@@ -307,7 +258,7 @@ function PlansContent() {
 
         {errorMessage && (
           <div className="max-w-2xl mx-auto">
-            <Alert variant="info">
+            <Alert variant="error">
               <AlertTitle>Catálogo de planes</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
@@ -322,20 +273,26 @@ function PlansContent() {
             <p className="text-sm font-medium text-slate-500">Cargando membresías disponibles...</p>
           </div>
         ) : filteredPlans.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200 max-w-lg mx-auto space-y-3">
+          <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200 max-w-lg mx-auto space-y-3" id="plans-empty-state">
             <Music className="w-10 h-10 text-slate-400 mx-auto" aria-hidden="true" />
-            <h3 className="text-lg font-bold text-slate-900">No hay planes en esta categoría</h3>
+            <h3 className="text-lg font-bold text-slate-900">
+              {plans.length === 0 ? 'No hay planes disponibles en este momento' : 'No hay planes en esta categoría'}
+            </h3>
             <p className="text-xs text-slate-500">
-              Selecciona &quot;Todos los planes&quot; para explorar el catálogo completo de membresías.
+              {plans.length === 0
+                ? 'Vuelve a consultar más tarde para nuevas membresías de suscripción.'
+                : 'Selecciona "Todos los planes" para explorar el catálogo completo de membresías.'}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedType('ALL')}
-              className="mt-2"
-            >
-              Ver todos los planes
-            </Button>
+            {plans.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedType('ALL')}
+                className="mt-2"
+              >
+                Ver todos los planes
+              </Button>
+            )}
           </div>
         ) : (
           /* Plans Cards Grid */

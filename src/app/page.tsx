@@ -1,7 +1,13 @@
+'use client';
+
 import Link from 'next/link';
-import { Disc3, Radio, Music, Sparkles, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
+import { CreditsBadge } from '@/components/credits/credits-badge';
+import { Disc3, Radio, Music, Sparkles, ArrowRight, ShieldCheck, Zap, LogOut } from 'lucide-react';
 
 export default function HomePage() {
+  const { isAuthenticated, logout } = useAuth();
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
       {/* Header / Navegación */}
@@ -21,25 +27,61 @@ export default function HomePage() {
 
           <nav aria-label="Navegación principal" className="flex items-center gap-1.5 sm:gap-3">
             <Link
+              href="/catalog"
+              className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              id="nav-catalog-link"
+            >
+              Catálogo
+            </Link>
+            <Link
               href="/plans"
               className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               id="nav-plans-link"
             >
               Planes
             </Link>
-            <Link
-              href="/login"
-              className="min-h-[44px] px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            >
-              <span className="hidden sm:inline">Iniciar sesión</span>
-              <span className="sm:hidden">Entrar</span>
-            </Link>
-            <Link
-              href="/register"
-              className="min-h-[44px] px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white whitespace-nowrap"
-            >
-              Crear cuenta
-            </Link>
+
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <CreditsBadge />
+                <Link
+                  href="/dashboard"
+                  id="landing-dashboard-link"
+                  className="min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="sm:hidden">Estudio</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  id="landing-logout-btn"
+                  className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                  aria-label="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4 sm:mr-1.5" aria-hidden="true" />
+                  <span className="hidden sm:inline">Salir</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  id="landing-login-link"
+                  className="min-h-[44px] px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  <span className="hidden sm:inline">Iniciar sesión</span>
+                  <span className="sm:hidden">Entrar</span>
+                </Link>
+                <Link
+                  href="/register"
+                  id="landing-register-link"
+                  className="min-h-[44px] px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white whitespace-nowrap"
+                >
+                  Crear cuenta
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -65,20 +107,33 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto min-h-[44px] px-8 py-3 text-base font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white group"
-            >
-              <span>Crear cuenta gratuita</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                id="hero-dashboard-link"
+                className="w-full sm:w-auto min-h-[44px] px-8 py-3 text-base font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white group"
+              >
+                <span>Ir a mi estación de trabajo</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className="w-full sm:w-auto min-h-[44px] px-8 py-3 text-base font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white group"
+                >
+                  <span>Crear cuenta gratuita</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
 
-            <Link
-              href="/login"
-              className="w-full sm:w-auto min-h-[44px] px-8 py-3 text-base font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            >
-              Acceder a mi estudio
-            </Link>
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto min-h-[44px] px-8 py-3 text-base font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  Acceder a mi estudio
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Value pillars in clean white cards */}

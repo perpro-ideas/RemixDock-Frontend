@@ -43,7 +43,7 @@ export function PayPalButtonWrapper({
         throw new Error('No se pudo inicializar la orden de pago.');
       }
 
-      const paypalOrderId = orderData.paypalOrderId || `PAYPAL-MOCK-${Date.now()}`;
+      const paypalOrderId = orderData.paypalOrderId || orderData.orderId;
 
       // 2. Confirmar y capturar la transacción en el backend
       const captureData = await apiFetch<CaptureOrderResponse>('/payments/paypal/capture-order', {

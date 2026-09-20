@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { Plan, PlanType, CreatePlanPayload } from '@/types/plan.types';
 import {
   Disc3,
@@ -37,50 +37,6 @@ const planTypeBadges: Record<PlanType, { label: string; className: string }> = {
   },
 };
 
-const initialAdminPlans: Plan[] = [
-  {
-    id: 'plan-starter-monthly',
-    name: 'DJ Starter',
-    description: 'Acceso inicial para DJs que buscan pistas seleccionadas.',
-    type: 'MONTHLY',
-    price: 9.99,
-    durationDays: 30,
-    creditsIncluded: 15,
-    benefits: ['15 descargas mensuales', 'Acceso al catálogo general', 'Audio en alta fidelidad'],
-    canRequestRemix: false,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-pro-monthly',
-    name: 'DJ Pro Club',
-    description: 'Membresía para DJs de cabina con stems y peticiones.',
-    type: 'MONTHLY',
-    price: 19.99,
-    durationDays: 30,
-    creditsIncluded: 50,
-    benefits: ['50 descargas mensuales', 'Stems multipista separados', '2 peticiones de remix'],
-    canRequestRemix: true,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-vip-pack',
-    name: 'Pack Productor 100',
-    description: 'Paquete especial de créditos sin caducidad mensual.',
-    type: 'CREDITS_PACK',
-    price: 49.99,
-    creditsIncluded: 100,
-    benefits: ['100 créditos de descarga', 'Sin vencimiento de tiempo', 'Descarga de acapellas'],
-    canRequestRemix: false,
-    isActive: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 export default function AdminPlansPage() {
   const { user, accessToken, isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
@@ -109,18 +65,25 @@ export default function AdminPlansPage() {
   const loadAdminPlans = useCallback(async () => {
     try {
       setIsLoadingPlans(true);
+      setErrorMessage(null);
       const data = await apiFetch<Plan[]>('/admin/plans', {
         token: accessToken,
       });
 
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setPlans(data);
       } else {
-        setPlans(initialAdminPlans);
+        setPlans([]);
       }
-    } catch {
-      // Fallback a planes iniciales en caso de modo desconectado
-      setPlans(initialAdminPlans);
+    } catch (err) {
+      if (err instanceof ApiClientError) {
+        setErrorMessage(err.message || 'No fue posible cargar los planes de suscripción.');
+      } else if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage('No se pudo conectar con el catálogo administrativo.');
+      }
+      setPlans([]);
     } finally {
       setIsLoadingPlans(false);
     }
@@ -185,17 +148,14 @@ export default function AdminPlansPage() {
           ? `El plan "${plan.name}" ahora está activo en el catálogo público.`
           : `El plan "${plan.name}" ha sido pausado y ya no se mostrará a los usuarios.`
       );
-    } catch {
-      // Si la API falla pero estamos en frontend, actualizamos localmente para fluidez
-      const updatedStatus = !plan.isActive;
-      setPlans((prev) =>
-        prev.map((p) => (p.id === plan.id ? { ...p, isActive: updatedStatus } : p))
-      );
-      setStatusMessage(
-        updatedStatus
-          ? `El plan "${plan.name}" ahora está activo.`
-          : `El plan "${plan.name}" ha sido pausado.`
-      );
+    } catch (err) {
+      if (err instanceof ApiClientError) {
+        setErrorMessage(err.message || 'No fue posible actualizar el estado del plan.');
+      } else if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage('Error al comunicar con el servidor.');
+      }
     } finally {
       setIsUpdatingId(null);
     }
@@ -258,26 +218,14 @@ export default function AdminPlansPage() {
       setFormDescription('');
       setFormPrice('19.99');
       setFormCanRequestRemix(false);
-    } catch {
-      // Fallback local en caso de entorno mock
-      const newMockPlan: Plan = {
-        id: `plan-created-${Date.now()}`,
-        name: payload.name,
-        description: payload.description,
-        type: payload.type,
-        price: payload.price,
-        durationDays: payload.durationDays,
-        creditsIncluded: payload.creditsIncluded,
-        benefits: payload.benefits,
-        canRequestRemix: payload.canRequestRemix ?? false,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setPlans((prev) => [newMockPlan, ...prev]);
-      setStatusMessage(`El plan "${newMockPlan.name}" fue creado exitosamente.`);
-      setIsModalOpen(false);
+    } catch (err) {
+      if (err instanceof ApiClientError) {
+        setCreateError(err.message || 'No fue posible crear el nuevo plan.');
+      } else if (err instanceof Error) {
+        setCreateError(err.message);
+      } else {
+        setCreateError('Error al crear el nuevo plan en el servidor.');
+      }
     } finally {
       setIsCreating(false);
     }
