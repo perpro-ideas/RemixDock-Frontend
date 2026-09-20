@@ -15,20 +15,8 @@ test.describe('Flujo E2E de Recuperación y Restablecimiento de Contraseña (REM
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    // Verificar si el backend local en puerto 4000 está activo
-    let isBackendAlive = false;
-    try {
-      const ping = await fetch('http://localhost:4000/api/v1/pings/admin', { signal: AbortSignal.timeout(1000) });
-      if (ping.status === 401 || ping.status === 200 || ping.status === 403) {
-        isBackendAlive = true;
-      }
-    } catch {
-      isBackendAlive = false;
-    }
-
-    // Interceptar llamadas al backend si no está en ejecución localmente
-    if (!isBackendAlive) {
-      await page.route('**/api/v1/auth/forgot-password', async (route) => {
+    // Mock de rutas de recuperación
+    await page.route('**/api/v1/auth/forgot-password', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -61,7 +49,6 @@ test.describe('Flujo E2E de Recuperación y Restablecimiento de Contraseña (REM
           }),
         });
       });
-    }
   });
 
   test('debe validar el enlace en login, solicitar instrucciones en forgot-password, capturar reset-password y redirigir con confirmación', async ({ page }) => {

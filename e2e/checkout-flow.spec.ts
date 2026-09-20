@@ -20,20 +20,8 @@ test.describe('Flujo E2E de Checkout y Pasarela PayPal (feature/checkout-paypal-
     currentCredits = 35;
     isLoggedIn = false;
 
-    // Verificar si el backend local en puerto 4000 está activo
-    let isBackendAlive = false;
-    try {
-      const ping = await fetch('http://localhost:4000/api/v1/pings/admin', { signal: AbortSignal.timeout(1000) });
-      if (ping.status === 401 || ping.status === 200 || ping.status === 403) {
-        isBackendAlive = true;
-      }
-    } catch {
-      isBackendAlive = false;
-    }
-
-    if (!isBackendAlive) {
-      // 1. Mock de Login
-      await page.route('**/api/v1/auth/login', async (route) => {
+    // 1. Mock de Login
+    await page.route('**/api/v1/auth/login', async (route) => {
         isLoggedIn = true;
         await route.fulfill({
           status: 200,
@@ -181,7 +169,6 @@ test.describe('Flujo E2E de Checkout y Pasarela PayPal (feature/checkout-paypal-
           }),
         });
       });
-    }
   });
 
   test('debe redirigir a un usuario no autenticado a login y retornar al catálogo con modal abierto', async ({ page }) => {

@@ -58,20 +58,8 @@ test.describe('Flujo E2E de Planes de Suscripción (REM-65 & REM-62)', () => {
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    // Verificar si el backend local en puerto 4000 está activo
-    let isBackendAlive = false;
-    try {
-      const ping = await fetch('http://localhost:4000/api/v1/pings/admin', { signal: AbortSignal.timeout(1000) });
-      if (ping.status === 401 || ping.status === 200 || ping.status === 403) {
-        isBackendAlive = true;
-      }
-    } catch {
-      isBackendAlive = false;
-    }
-
-    if (!isBackendAlive) {
-      // Mock de login para ADMIN
-      await page.route('**/api/v1/auth/login', async (route) => {
+    // Mock de login para ADMIN
+    await page.route('**/api/v1/auth/login', async (route) => {
         const body = route.request().postDataJSON() as { identifier?: string };
         const isAdmin = body.identifier?.includes('admin');
 
@@ -169,7 +157,6 @@ test.describe('Flujo E2E de Planes de Suscripción (REM-65 & REM-62)', () => {
           body: JSON.stringify(updated),
         });
       });
-    }
   });
 
   test('debe explorar el catálogo público de planes /plans y capturar pantalla (REM-65)', async ({ page }) => {

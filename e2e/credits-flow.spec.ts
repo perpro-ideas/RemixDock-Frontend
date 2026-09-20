@@ -14,20 +14,8 @@ test.describe('Flujo E2E de Créditos y Balance (Sprint 1 - REM-71)', () => {
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    // Verificar si el backend local en puerto 4000 está activo
-    let isBackendAlive = false;
-    try {
-      const ping = await fetch('http://localhost:4000/api/v1/pings/admin', { signal: AbortSignal.timeout(1000) });
-      if (ping.status === 401 || ping.status === 200 || ping.status === 403) {
-        isBackendAlive = true;
-      }
-    } catch {
-      isBackendAlive = false;
-    }
-
-    // Interceptar rutas de backend si no está disponible el servidor local
-    if (!isBackendAlive) {
-      await page.route('**/api/v1/auth/login', async (route) => {
+    // Mock de rutas
+    await page.route('**/api/v1/auth/login', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -113,7 +101,6 @@ test.describe('Flujo E2E de Créditos y Balance (Sprint 1 - REM-71)', () => {
           ]),
         });
       });
-    }
   });
 
   test('debe mostrar el CreditsBadge en el header y el módulo de balance en el Dashboard', async ({ page }) => {

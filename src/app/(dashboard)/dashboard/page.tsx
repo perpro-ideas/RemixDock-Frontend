@@ -136,7 +136,12 @@ export default function DashboardPage() {
       {/* Navigation Header */}
       <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <Link
+            href="/"
+            id="dashboard-home-link"
+            aria-label="Ir a la página de inicio"
+            className="flex items-center gap-2.5 sm:gap-3 rounded-lg p-1 hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0">
               <Disc3 className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             </div>
@@ -146,7 +151,7 @@ export default function DashboardPage() {
                 Studio
               </span>
             </span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-1.5 sm:gap-3 justify-end">
             <span className={`hidden sm:inline-flex ${roleInfo.className}`}>
@@ -155,6 +160,16 @@ export default function DashboardPage() {
 
             {/* Header Credits Badge */}
             <CreditsBadge />
+
+            <Link
+              href="/catalog"
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
+              id="dashboard-catalog-header-btn"
+              aria-label="Ir al catálogo musical"
+            >
+              <Compass className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+              <span className="hidden sm:inline">Catálogo</span>
+            </Link>
 
             {user.role === 'ADMIN' && (
               <Link
@@ -505,7 +520,11 @@ export default function DashboardPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+              <Link
+                href="/catalog"
+                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                id="dashboard-catalog-card-link"
+              >
                 <div className="flex items-center gap-2 text-slate-900 font-semibold">
                   <Compass className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   <span>Catálogo de Remixes</span>
@@ -513,7 +532,7 @@ export default function DashboardPage() {
                 <p className="text-slate-600 leading-relaxed">
                   Explora y reproduce versiones exclusivas de la comunidad.
                 </p>
-              </div>
+              </Link>
 
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
                 <div className="flex items-center gap-2 text-slate-900 font-semibold">

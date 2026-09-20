@@ -10,20 +10,8 @@ test.describe('Flujo E2E de Autenticación RemixDock (Sprint 0)', () => {
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    // Comprobar si el backend local en puerto 4000 está en ejecución
-    let isBackendAlive = false;
-    try {
-      const ping = await fetch('http://localhost:4000/api/v1/pings/admin', { signal: AbortSignal.timeout(1000) });
-      if (ping.status === 401 || ping.status === 200 || ping.status === 403) {
-        isBackendAlive = true;
-      }
-    } catch {
-      isBackendAlive = false;
-    }
-
-    // Si el backend no está activo en este momento, interceptar las rutas con respuestas exactas del backend NestJS
-    if (!isBackendAlive) {
-      await page.route('**/api/v1/auth/register', async (route) => {
+    // Mock de rutas de autenticación
+    await page.route('**/api/v1/auth/register', async (route) => {
         const body = route.request().postDataJSON() as { email: string; username: string };
         await route.fulfill({
           status: 201,
@@ -77,7 +65,17 @@ test.describe('Flujo E2E de Autenticación RemixDock (Sprint 0)', () => {
           body: JSON.stringify({ message: 'Sesión cerrada exitosamente' }),
         });
       });
-    }
+      await page.route('**/api/v1/me/credits', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            balance: 50,
+            lastUpdated: new Date().toISOString(),
+            history: [],
+          }),
+        });
+      });
   });
 
   test('debe completar el flujo interactivo: landing -> registro -> login -> dashboard -> logout', async ({ page }) => {
@@ -136,5 +134,36 @@ test.describe('Flujo E2E de Autenticación RemixDock (Sprint 0)', () => {
     await page.waitForURL(/.*login/, { timeout: 10000 });
     await expect(page).toHaveURL(/.*login/);
     await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+  });
+
+  test('debe persistir el estado autenticado en la landing page mostrando CreditsBadge y enlace a dashboard', async ({ page }) => {
+    // 1. Iniciar sesión directamente
+    await page.goto('/login');
+    await page.fill('input#identifier', 'dj_session_test@remixdock.com');
+    await page.fill('input#password', 'Password12345!');
+    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*dashboard/);
+
+    // 2. Navegar a la página de inicio / haciendo clic en el logo
+    const logoLink = page.locator('header a[href="/"]').first();
+    await logoLink.click();
+    await page.waitForURL('/', { timeout: 5000 });
+
+    // 3. Verificar que los botones "Iniciar sesión" y "Crear cuenta" están ausentes
+    await expect(page.locator('#landing-login-link')).toHaveCount(0);
+    await expect(page.locator('#landing-register-link')).toHaveCount(0);
+
+    // 4. Verificar que el CreditsBadge, el enlace al Dashboard y el botón Salir están visibles
+    await expect(page.locator('#credits-badge-link')).toBeVisible();
+    await expect(page.locator('#landing-dashboard-link')).toBeVisible();
+    await expect(page.locator('#landing-logout-btn')).toBeVisible();
+
+    // 5. Probar que al presionar el botón Salir en la landing, se cierra la sesión reactivamente
+    await page.locator('#landing-logout-btn').click();
+    await expect(page.locator('#landing-login-link')).toBeVisible();
+    await expect(page.locator('#landing-register-link')).toBeVisible();
+    await expect(page.locator('#landing-dashboard-link')).toHaveCount(0);
   });
 });

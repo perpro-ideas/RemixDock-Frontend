@@ -5,38 +5,14 @@ import { useAuth } from '@/context/auth-context';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { CreditBalanceResponse, CreditHistoryEntry } from '@/types/credits.types';
 
-const fallbackHistory: CreditHistoryEntry[] = [
-  {
-    id: 'tx-sub-001',
-    amount: 50,
-    type: 'PLAN_SUBSCRIPTION',
-    description: 'Suscripción activa - Plan DJ Pro Club',
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  {
-    id: 'tx-dl-002',
-    amount: -5,
-    type: 'REMIX_DOWNLOAD',
-    description: 'Descarga de remix: Summer Groove (Stems Pack)',
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: 'tx-req-003',
-    amount: -10,
-    type: 'REMIX_REQUEST',
-    description: 'Petición de versión exclusiva: Electro Sunset (Acapella)',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
 const CREDITS_SYNC_EVENT = 'remixdock:credits-sync';
 
 export function useCredits() {
   const { accessToken, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
-  const [balance, setBalance] = useState<number>(35);
+  const [balance, setBalance] = useState<number>(0);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [history, setHistory] = useState<CreditHistoryEntry[]>(fallbackHistory);
+  const [history, setHistory] = useState<CreditHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,18 +35,15 @@ export function useCredits() {
         setHistory(Array.isArray(data.history) ? data.history : []);
       }
     } catch (err) {
-      // En entorno local o si el endpoint aún no tiene transacciones, conservar fallback elegante
       if (err instanceof ApiClientError) {
-        if (err.statusCode === 404 || err.statusCode === 500) {
-          setBalance(35);
-          setHistory(fallbackHistory);
-        } else {
-          setError(err.message || 'No fue posible sincronizar el balance.');
-        }
+        setError(err.message || 'No fue posible sincronizar el balance.');
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
-        setBalance(35);
-        setHistory(fallbackHistory);
+        setError('No fue posible sincronizar el balance de créditos.');
       }
+      setBalance(0);
+      setHistory([]);
     } finally {
       setIsLoading(false);
     }
