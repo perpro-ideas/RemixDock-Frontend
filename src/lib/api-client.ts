@@ -16,6 +16,22 @@ export class ApiClientError extends Error {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
+let inMemoryAccessToken: string | null = null;
+
+/**
+ * Registra o limpia el token de autenticación en memoria para peticiones subsiguientes.
+ */
+export function setAccessToken(token: string | null): void {
+  inMemoryAccessToken = token;
+}
+
+/**
+ * Obtiene el token de autenticación actualmente almacenado en memoria.
+ */
+export function getAccessToken(): string | null {
+  return inMemoryAccessToken;
+}
+
 export interface ApiFetchOptions extends RequestInit {
   token?: string | null;
 }
@@ -38,8 +54,10 @@ export async function apiFetch<T>(
   if (!headers.has('Content-Type') && restOptions.body && typeof restOptions.body === 'string') {
     headers.set('Content-Type', 'application/json');
   }
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
+
+  const activeToken = token !== undefined ? token : inMemoryAccessToken;
+  if (activeToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${activeToken}`);
   }
 
   const response = await fetch(url, {

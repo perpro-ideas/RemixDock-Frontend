@@ -201,6 +201,14 @@ function CatalogContent() {
               <div className="flex items-center gap-1.5 sm:gap-2.5">
                 <CreditsBadge />
                 <Link
+                  href="/library"
+                  className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  id="catalog-library-link"
+                >
+                  <span className="hidden sm:inline">Biblioteca</span>
+                  <span className="sm:hidden">Música</span>
+                </Link>
+                <Link
                   href="/dashboard"
                   className="min-h-[44px] min-w-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   id="catalog-dashboard-link"

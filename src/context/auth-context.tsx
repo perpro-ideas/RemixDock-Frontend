@@ -2,11 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, LoginPayload, RegisterPayload, AuthResponse } from '@/types/auth.types';
-import { apiFetch, ApiClientError } from '@/lib/api-client';
+import { apiFetch, ApiClientError, setAccessToken as setApiClientToken } from '@/lib/api-client';
 
 export interface AuthContextType {
   user: User | null;
   accessToken: string | null;
+  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (payload: LoginPayload) => Promise<void>;
@@ -36,6 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (authData.accessToken && authData.user) {
         setAccessToken(authData.accessToken);
+        setApiClientToken(authData.accessToken);
         setUser(authData.user);
         return true;
       }
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 2. Si refresh no incluye el usuario completo, consultar GET /auth/me con el nuevo token
       if (authData.accessToken) {
         setAccessToken(authData.accessToken);
+        setApiClientToken(authData.accessToken);
         const userProfile = await apiFetch<User>('/auth/me', {
           method: 'GET',
           token: authData.accessToken,
@@ -68,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(null);
       setAccessToken(null);
+      setApiClientToken(null);
       return false;
     }
   }, []);
@@ -103,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     setAccessToken(authData.accessToken);
+    setApiClientToken(authData.accessToken);
     setUser(authData.user);
   }, []);
 
@@ -135,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setAccessToken(null);
+      setApiClientToken(null);
     }
   }, [accessToken]);
 
@@ -148,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     accessToken,
+    token: accessToken,
     isLoading,
     isAuthenticated: !!user,
     login,

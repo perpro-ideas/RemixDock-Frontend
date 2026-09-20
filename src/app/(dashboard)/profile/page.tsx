@@ -19,6 +19,7 @@ import {
   KeyRound,
   CheckCircle2,
   Lock,
+  FolderHeart,
 } from 'lucide-react';
 import { CreditsBadge } from '@/components/credits/credits-badge';
 
@@ -234,6 +235,16 @@ export default function ProfilePage() {
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">Volver al estudio</span>
               <span className="sm:hidden">Volver</span>
+            </Link>
+
+            <Link
+              href="/library"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+              id="profile-library-link"
+            >
+              <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+              <span className="hidden sm:inline">Mi Biblioteca</span>
+              <span className="sm:hidden">Biblioteca</span>
             </Link>
           </div>
 

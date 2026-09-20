@@ -44,11 +44,42 @@ const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
 };
 
 const movementTypeLabels: Record<CreditEntryType, string> = {
-  PLAN_SUBSCRIPTION: 'Suscripción',
-  TOPUP_PURCHASE: 'Recarga de saldo',
-  REMIX_DOWNLOAD: 'Descarga de pista',
-  REMIX_REQUEST: 'Petición exclusiva',
-  ADMIN_ADJUSTMENT: 'Ajuste de saldo',
+  PLAN_SUBSCRIPTION: 'Membresía',
+  TOPUP_PURCHASE: 'Recarga de Créditos',
+  REMIX_DOWNLOAD: 'Descarga',
+  REMIX_REQUEST: 'Petición Exclusiva',
+  ADMIN_ADJUSTMENT: 'Ajuste de Cuenta',
+};
+
+const movementTypeBadgeStyles: Record<string, { label: string; className: string }> = {
+  PLAN_SUBSCRIPTION: {
+    label: 'Membresía',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  SUBSCRIPTION: {
+    label: 'Membresía',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  TOPUP_PURCHASE: {
+    label: 'Recarga de Créditos',
+    className: 'bg-teal-50 text-teal-700 border-teal-200',
+  },
+  TOPUP: {
+    label: 'Recarga de Créditos',
+    className: 'bg-teal-50 text-teal-700 border-teal-200',
+  },
+  REMIX_DOWNLOAD: {
+    label: 'Descarga',
+    className: 'bg-slate-100 text-slate-700 border-slate-200',
+  },
+  REMIX_REQUEST: {
+    label: 'Petición Exclusiva',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  ADMIN_ADJUSTMENT: {
+    label: 'Ajuste de Cuenta',
+    className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  },
 };
 
 function formatMovementDate(dateStr: string): string {
@@ -162,6 +193,16 @@ export default function DashboardPage() {
             <CreditsBadge />
 
             <Link
+              href="/library"
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
+              id="dashboard-library-header-btn"
+              aria-label="Ir a mi biblioteca musical"
+            >
+              <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+              <span className="hidden sm:inline">Biblioteca</span>
+            </Link>
+
+            <Link
               href="/catalog"
               className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
               id="dashboard-catalog-header-btn"
@@ -219,6 +260,31 @@ export default function DashboardPage() {
           <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
             Administra tu cuenta, revisa tus remixes y accede a tu biblioteca musical.
           </p>
+        </section>
+
+        {/* Acceso Rápido a Mi Biblioteca (REM-113) */}
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" id="dashboard-library-banner">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-200/70 flex items-center justify-center text-teal-700 shrink-0">
+              <FolderHeart className="w-6 h-6" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                Mi Biblioteca Musical
+              </h2>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Accede a tus pistas adquiridas y stems listos para re-descargar de inmediato sin costo.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/library"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] shrink-0 w-full sm:w-auto"
+            id="dashboard-library-panel-btn"
+          >
+            <span>Ver mis adquisiciones</span>
+            <ArrowUpRight className="w-4 h-4 text-slate-500" aria-hidden="true" />
+          </Link>
         </section>
 
         {/* Billetera y Balance de Créditos (REM-71) */}
@@ -404,10 +470,20 @@ export default function DashboardPage() {
                                 <p className="text-xs font-semibold text-slate-900 truncate">
                                   {entry.description}
                                 </p>
-                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5 flex-wrap">
-                                  <span className="font-medium text-slate-600">
-                                    {movementTypeLabels[entry.type] || entry.type}
-                                  </span>
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 flex-wrap">
+                                  {(() => {
+                                    const badge = movementTypeBadgeStyles[entry.type] || {
+                                      label: movementTypeLabels[entry.type] || entry.type,
+                                      className: 'bg-slate-100 text-slate-700 border-slate-200',
+                                    };
+                                    return (
+                                      <span
+                                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badge.className}`}
+                                      >
+                                        {badge.label}
+                                      </span>
+                                    );
+                                  })()}
                                   <span>•</span>
                                   <span>{formatMovementDate(entry.createdAt)}</span>
                                 </div>
@@ -534,7 +610,11 @@ export default function DashboardPage() {
                 </p>
               </Link>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+              <Link
+                href="/library"
+                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 hover:border-slate-300 active:bg-slate-100 border border-slate-200/80 text-xs space-y-1 cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+                id="dashboard-library-module-link"
+              >
                 <div className="flex items-center gap-2 text-slate-900 font-semibold">
                   <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   <span>Mi Biblioteca</span>
@@ -542,7 +622,7 @@ export default function DashboardPage() {
                 <p className="text-slate-600 leading-relaxed">
                   Accede a tus pistas descargadas y solicitudes activas.
                 </p>
-              </div>
+              </Link>
 
               <Link
                 href="/plans"
