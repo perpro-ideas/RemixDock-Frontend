@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Track, Stem } from '@/types/tracks.types';
+import Link from 'next/link';
+import { Track, Stem, DownloadResponse } from '@/types/tracks.types';
 import { useAudioPlayer } from '@/context/audio-player-context';
 import { useAuth } from '@/context/auth-context';
 import { useCredits } from '@/hooks/use-credits';
+import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import {
   X,
@@ -15,6 +17,7 @@ import {
   Layers,
   Music,
   CheckCircle2,
+  AlertCircle,
   FileAudio,
   Download,
 } from 'lucide-react';
@@ -34,12 +37,15 @@ const stemTypeStyles: Record<string, { label: string; className: string }> = {
   DRUMS: { label: 'Batería y Percusión', className: 'bg-rose-50 text-rose-800 border-rose-200/60' },
   BASS: { label: 'Bajo y Sub', className: 'bg-amber-50 text-amber-800 border-amber-200/60' },
   SYNTH: { label: 'Sintetizadores', className: 'bg-indigo-50 text-indigo-800 border-indigo-200/60' },
+  SYNTHS: { label: 'Sintetizadores', className: 'bg-indigo-50 text-indigo-800 border-indigo-200/60' },
   VOCALS: { label: 'Voces y Acapellas', className: 'bg-emerald-50 text-emerald-800 border-emerald-200/60' },
+  INSTRUMENTS: { label: 'Instrumentos y Acústicos', className: 'bg-purple-50 text-purple-800 border-purple-200/60' },
   FX: { label: 'Efectos y Risers', className: 'bg-teal-50 text-teal-800 border-teal-200/60' },
   OTHER: { label: 'Otros Elementos', className: 'bg-slate-100 text-slate-800 border-slate-200/60' },
 };
 
-function formatDuration(sec: number): string {
+function formatDuration(sec?: number): string {
+  if (typeof sec !== 'number' || isNaN(sec) || sec < 0) return '0:00';
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
@@ -49,7 +55,78 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
   const router = useRouter();
   const { currentTrack, isPlaying, togglePlay } = useAudioPlayer();
   const { isAuthenticated } = useAuth();
-  const { balance } = useCredits();
+  const { refetch } = useCredits();
+
+  const [detailedTrack, setDetailedTrack] = useState<Track | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [downloadingStemId, setDownloadingStemId] = useState<string | null>(null);
+  const [downloadFeedback, setDownloadFeedback] = useState<{
+    type: 'success' | 'error' | 'info';
+    message: string;
+    showPlansLink?: boolean;
+  } | null>(null);
+
+  // Helper para forzar descarga en el navegador mediante elemento <a> temporal
+  const triggerBrowserDownload = (downloadUrl: string, fileName?: string) => {
+    if (typeof window === 'undefined') return;
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    if (fileName) {
+      link.download = fileName;
+    } else {
+      link.setAttribute('download', '');
+    }
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Carga dinámica de detalles de pista y stems desde GET /api/v1/tracks/:id
+  useEffect(() => {
+    let isMounted = true;
+    setDownloadFeedback(null);
+    setIsDownloading(false);
+    setDownloadingStemId(null);
+
+    if (isOpen && track?.id) {
+      // Si el track ya contiene stems en memoria, los usamos directamente
+      if (Array.isArray(track.stems) && track.stems.length > 0) {
+        setDetailedTrack(track);
+        setIsLoadingDetails(false);
+        return;
+      }
+
+      // Si no tiene stems o vienen vacíos, consultar el endpoint de detalle
+      setIsLoadingDetails(true);
+      apiFetch<Track>(`/tracks/${track.id}`)
+        .then((fullTrack) => {
+          if (isMounted) {
+            setDetailedTrack(fullTrack);
+          }
+        })
+        .catch((err) => {
+          console.error('Error al cargar stems de la pista:', err);
+          if (isMounted) {
+            setDetailedTrack(track);
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoadingDetails(false);
+          }
+        });
+    } else {
+      setDetailedTrack(null);
+      setIsLoadingDetails(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, track]);
 
   // Bloquear scroll de fondo mientras el modal está abierto
   useEffect(() => {
@@ -78,23 +155,118 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
     return null;
   }
 
-  const isCurrentPlaying = currentTrack?.id === track.id && isPlaying;
-  const stemsToDisplay: Stem[] = Array.isArray(track.stems) ? track.stems : [];
+  const activeTrack = detailedTrack || track;
+  const isCurrentPlaying = currentTrack?.id === activeTrack.id && isPlaying;
+  const stemsToDisplay: Stem[] = Array.isArray(activeTrack.stems) ? activeTrack.stems : [];
 
-  const handleAcquireClick = () => {
+  // Descarga del master y stems completos (REM-106 / REM-113)
+  const handleAcquireClick = async () => {
     if (!isAuthenticated) {
       router.push(`/login?redirect=/catalog`);
       return;
     }
 
-    if (balance < track.creditCost) {
-      router.push('/plans');
+    setIsDownloading(true);
+    setDownloadFeedback(null);
+
+    try {
+      const response = await apiFetch<DownloadResponse>(`/tracks/${activeTrack.id}/download`, {
+        method: 'POST',
+      });
+
+      triggerBrowserDownload(
+        response.downloadUrl,
+        `${activeTrack.title} - ${activeTrack.artist} (Master & Stems).zip`
+      );
+
+      // Sincronizar el saldo reactivo de créditos
+      await refetch();
+
+      if (response.isRedownload) {
+        setDownloadFeedback({
+          type: 'info',
+          message: 'Re-descarga autorizada. Tu descarga ha comenzado sin costo de créditos.',
+        });
+      } else {
+        setDownloadFeedback({
+          type: 'success',
+          message: `¡Pista adquirida! Se han canjeado ${response.costCredits} créditos y la descarga ha comenzado.`,
+        });
+      }
+    } catch (err) {
+      if (
+        err instanceof ApiClientError &&
+        (err.statusCode === 400 || err.statusCode === 402 || err.message?.toLowerCase().includes('crédito'))
+      ) {
+        setDownloadFeedback({
+          type: 'error',
+          message: 'Saldo de créditos insuficiente para adquirir esta pista y sus stems.',
+          showPlansLink: true,
+        });
+      } else {
+        setDownloadFeedback({
+          type: 'error',
+          message: err instanceof Error ? err.message : 'Error al procesar la descarga de la pista.',
+        });
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Descarga de stem individual
+  const handleDownloadStem = async (stem: Stem) => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/catalog`);
       return;
     }
 
-    // Si tiene balance, redirigir a catálogo con mensaje o proceder
-    alert(`¡Pista desbloqueada con éxito! Has canjeado ${track.creditCost} crédito por el master y los stems.`);
-    onClose();
+    setDownloadingStemId(stem.id);
+    setDownloadFeedback(null);
+
+    try {
+      const response = await apiFetch<DownloadResponse>(`/stems/${stem.id}/download`, {
+        method: 'POST',
+      });
+
+      triggerBrowserDownload(
+        response.downloadUrl,
+        `${activeTrack.title} - ${stem.name}.wav`
+      );
+
+      // Sincronizar el saldo reactivo de créditos
+      await refetch();
+
+      if (response.isRedownload) {
+        setDownloadFeedback({
+          type: 'info',
+          message: `Re-descarga gratuita del stem "${stem.name}" iniciada sin costo.`,
+        });
+      } else {
+        setDownloadFeedback({
+          type: 'success',
+          message: `Stem "${stem.name}" descargado con éxito (${response.costCredits} créditos).`,
+        });
+      }
+    } catch (err) {
+      if (
+        err instanceof ApiClientError &&
+        (err.statusCode === 400 || err.statusCode === 402 || err.message?.toLowerCase().includes('crédito'))
+      ) {
+        setDownloadFeedback({
+          type: 'error',
+          message: 'Saldo insuficiente para descargar este stem individual.',
+          showPlansLink: true,
+        });
+      } else {
+        setDownloadFeedback({
+          type: 'error',
+          message: err instanceof Error ? err.message : 'Error al procesar la descarga del stem.',
+        });
+      }
+    } finally {
+      setDownloadingStemId(null);
+    }
   };
 
   return (
@@ -137,7 +309,7 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
         </div>
 
         {/* Cuerpo del Modal con Scroll Interno Seguro */}
-        <div className="p-5 sm:p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-70px)]" id="track-detail-modal-body">
+        <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 min-h-0" id="track-detail-modal-body">
           {/* Ficha principal */}
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-900 flex items-center justify-center text-emerald-400 shrink-0 shadow-md border border-slate-200/80">
@@ -150,29 +322,29 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
                   id="track-detail-modal-title"
                   className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
                 >
-                  {track.title}
+                  {activeTrack.title}
                 </h2>
-                {track.version && (
+                {activeTrack.version && (
                   <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80">
-                    {track.version}
+                    {activeTrack.version}
                   </span>
                 )}
               </div>
 
               <p className="text-sm text-slate-600 font-medium mt-1">
-                {track.artist} {track.remixer ? `(Remix: ${track.remixer})` : ''}
+                {activeTrack.artist} {activeTrack.remixer ? `(Remix: ${activeTrack.remixer})` : ''}
               </p>
 
               <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/60">
-                  {track.bpm} BPM
+                  {activeTrack.bpm} BPM
                 </span>
                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200/60">
-                  Tonalidad: {track.musicalKey || track.key}
+                  Tonalidad: {activeTrack.musicalKey || activeTrack.key}
                 </span>
-                {track.genre?.name && (
+                {activeTrack.genre?.name && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/60">
-                    {track.genre.name}
+                    {activeTrack.genre.name}
                   </span>
                 )}
               </div>
@@ -191,14 +363,14 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
             </div>
             <div className="p-2">
               <span className="text-[11px] font-medium text-slate-500 block">Duración</span>
-              <span className="text-xs font-bold text-slate-900 mt-0.5 block">
-                {formatDuration(track.duration)}
+              <span className="text-xs font-bold text-slate-900 mt-0.5 block" id="modal-track-duration">
+                {formatDuration(activeTrack.durationSeconds ?? activeTrack.duration)}
               </span>
             </div>
             <div className="p-2">
               <span className="text-[11px] font-medium text-slate-500 block">Costo Pista</span>
               <span className="text-xs font-bold text-emerald-700 mt-0.5 block">
-                {track.creditCost} {track.creditCost === 1 ? 'crédito' : 'créditos'}
+                {activeTrack.creditCost} {activeTrack.creditCost === 1 ? 'crédito' : 'créditos'}
               </span>
             </div>
           </div>
@@ -208,17 +380,33 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-teal-600" aria-hidden="true" />
-                <span>Stems Multipista Separados ({stemsToDisplay.length})</span>
+                <span>
+                  Stems Multipista Separados ({isLoadingDetails ? (activeTrack.stemsCount ?? '...') : stemsToDisplay.length})
+                </span>
               </h3>
               <span className="text-xs text-slate-500 font-medium">Archivos WAV individuales</span>
             </div>
 
-            {stemsToDisplay.length === 0 ? (
-              <div className="p-6 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50 text-xs text-slate-500" id="stems-list-container">
+            {isLoadingDetails ? (
+              <div
+                className="p-8 flex flex-col items-center justify-center border border-slate-200/80 rounded-xl bg-slate-50 text-slate-500 gap-2.5 shadow-sm"
+                id="stems-loading-container"
+              >
+                <Disc3 className="w-6 h-6 animate-spin text-emerald-600" aria-hidden="true" />
+                <p className="text-xs font-medium text-slate-600">Cargando stems individuales de estudio...</p>
+              </div>
+            ) : stemsToDisplay.length === 0 ? (
+              <div
+                className="p-6 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50 text-xs text-slate-500"
+                id="stems-list-container"
+              >
                 Esta pista no incluye stems individuales registrados actualmente.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm" id="stems-list-container">
+              <div
+                className="divide-y divide-slate-100 border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm"
+                id="stems-list-container"
+              >
                 {stemsToDisplay.map((stem) => {
                   const style = stemTypeStyles[stem.type] || defaultStemStyle;
                   return (
@@ -238,9 +426,26 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
                         </div>
                       </div>
 
-                      <div className="shrink-0 flex items-center gap-1.5 text-xs text-slate-400">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                        <span className="text-[11px] font-medium text-slate-600 hidden sm:inline">Incluido</span>
+                      <div className="shrink-0 flex items-center gap-2">
+                        <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                          <span className="text-[11px] font-medium text-slate-600">Incluido</span>
+                        </div>
+                        <button
+                          type="button"
+                          id={`download-stem-btn-${stem.id}`}
+                          onClick={() => handleDownloadStem(stem)}
+                          disabled={downloadingStemId === stem.id}
+                          className="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 min-h-[44px] min-w-[44px]"
+                          title={`Descargar ${stem.name}`}
+                          aria-label={`Descargar stem ${stem.name}`}
+                        >
+                          {downloadingStemId === stem.id ? (
+                            <Disc3 className="w-4 h-4 animate-spin text-emerald-600" aria-hidden="true" />
+                          ) : (
+                            <Download className="w-4 h-4" aria-hidden="true" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   );
@@ -249,38 +454,83 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
             )}
           </div>
 
-          {/* Acciones del Modal */}
-          <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
-            <button
-              type="button"
-              onClick={() => void togglePlay(track)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors min-h-[44px]"
-              id="modal-preview-btn"
+          {/* Banner de retroalimentación de descargas */}
+          {downloadFeedback && (
+            <div
+              id="modal-download-alert"
+              role="alert"
+              className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 ${
+                downloadFeedback.type === 'error'
+                  ? 'bg-rose-50 border-rose-200 text-rose-800'
+                  : downloadFeedback.type === 'info'
+                  ? 'bg-sky-50 border-sky-200 text-sky-800'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}
             >
-              {isCurrentPlaying ? (
-                <>
-                  <Pause className="w-4 h-4 text-slate-700 fill-current" aria-hidden="true" />
-                  <span>Pausar preview</span>
-                </>
+              {downloadFeedback.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" aria-hidden="true" />
               ) : (
-                <>
-                  <Play className="w-4 h-4 text-slate-700 fill-current ml-0.5" aria-hidden="true" />
-                  <span>Reproducir preview</span>
-                </>
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" aria-hidden="true" />
               )}
-            </button>
+              <div className="flex-1">
+                <p className="font-medium">{downloadFeedback.message}</p>
+                {downloadFeedback.showPlansLink && (
+                  <div className="mt-2">
+                    <Link
+                      href="/plans"
+                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      id="modal-go-to-plans-link"
+                    >
+                      Adquirir créditos en planes
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleAcquireClick}
-              className="min-h-[44px] gap-2"
-              id="modal-acquire-btn"
-            >
-              <Download className="w-4 h-4" aria-hidden="true" />
-              <span>Descargar master y stems ({track.creditCost} cr.)</span>
-            </Button>
-          </div>
+        {/* Acciones del Modal Fijas en el Pie */}
+        <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
+          <button
+            type="button"
+            onClick={() => void togglePlay(activeTrack)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors min-h-[44px]"
+            id="modal-preview-btn"
+          >
+            {isCurrentPlaying ? (
+              <>
+                <Pause className="w-4 h-4 text-slate-700 fill-current" aria-hidden="true" />
+                <span>Pausar preview</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 text-slate-700 fill-current ml-0.5" aria-hidden="true" />
+                <span>Reproducir preview</span>
+              </>
+            )}
+          </button>
+
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleAcquireClick}
+            disabled={isDownloading}
+            className="min-h-[44px] gap-2"
+            id="modal-acquire-btn"
+          >
+            {isDownloading ? (
+              <>
+                <Disc3 className="w-4 h-4 animate-spin text-white" aria-hidden="true" />
+                <span>Descargando...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" aria-hidden="true" />
+                <span>Descargar master y stems ({activeTrack.creditCost} cr.)</span>
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>
