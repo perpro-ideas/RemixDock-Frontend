@@ -29,6 +29,8 @@ const fallbackHistory: CreditHistoryEntry[] = [
   },
 ];
 
+const CREDITS_SYNC_EVENT = 'remixdock:credits-sync';
+
 export function useCredits() {
   const { accessToken, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
@@ -74,6 +76,35 @@ export function useCredits() {
     }
   }, [accessToken, isAuthenticated]);
 
+  const refetch = useCallback(async (newBalance?: number) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent(CREDITS_SYNC_EVENT, {
+          detail: { newBalance },
+        })
+      );
+    }
+    await fetchCredits();
+  }, [fetchCredits]);
+
+  // Sincronización multi-componente mediante evento de ventana
+  useEffect(() => {
+    const handleGlobalSync = (e: Event) => {
+      const customEvent = e as CustomEvent<{ newBalance?: number }>;
+      if (typeof customEvent.detail?.newBalance === 'number') {
+        setBalance(customEvent.detail.newBalance);
+      }
+      void fetchCredits();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener(CREDITS_SYNC_EVENT, handleGlobalSync);
+      return () => {
+        window.removeEventListener(CREDITS_SYNC_EVENT, handleGlobalSync);
+      };
+    }
+  }, [fetchCredits]);
+
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
       void fetchCredits();
@@ -88,6 +119,6 @@ export function useCredits() {
     history,
     isLoading,
     error,
-    refetch: fetchCredits,
+    refetch,
   };
 }

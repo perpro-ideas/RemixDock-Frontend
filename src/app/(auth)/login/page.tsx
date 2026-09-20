@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
@@ -16,6 +16,8 @@ function LoginForm() {
   const isJustRegistered = searchParams.get('registered') === 'true';
   const isPasswordChanged = searchParams.get('passwordChanged') === 'true';
   const isResetSuccess = searchParams.get('resetSuccess') === 'true';
+  const redirectParam = searchParams.get('redirect');
+  const planIdParam = searchParams.get('planId');
 
   const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
@@ -25,12 +27,24 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
-  // Redirigir al dashboard si ya está autenticado
+  // Determinar destino seguro post-autenticación
+  const getPostLoginDestination = useCallback((): string => {
+    if (!redirectParam || !redirectParam.startsWith('/')) {
+      return '/dashboard';
+    }
+    if (planIdParam && !redirectParam.includes('planId')) {
+      const separator = redirectParam.includes('?') ? '&' : '?';
+      return `${redirectParam}${separator}planId=${encodeURIComponent(planIdParam)}`;
+    }
+    return redirectParam;
+  }, [redirectParam, planIdParam]);
+
+  // Redirigir si ya está autenticado
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace(getPostLoginDestination());
     }
-  }, [isAuthenticated, isAuthLoading, router]);
+  }, [isAuthenticated, isAuthLoading, router, getPostLoginDestination]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,7 +66,7 @@ function LoginForm() {
     try {
       setIsSubmitting(true);
       await login({ identifier: identifier.trim(), password });
-      router.push('/dashboard');
+      router.push(getPostLoginDestination());
     } catch (err) {
       if (err instanceof ApiClientError) {
         if (err.statusCode === 401) {
@@ -108,6 +122,15 @@ function LoginForm() {
               <AlertTitle>Contraseña restablecida</AlertTitle>
               <AlertDescription>
                 Tu contraseña ha sido restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva credencial.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {redirectParam === '/plans' && !errorMessage && !isJustRegistered && !isPasswordChanged && !isResetSuccess && (
+            <Alert variant="info" id="plan-redirect-alert">
+              <AlertTitle>Inicia sesión para continuar</AlertTitle>
+              <AlertDescription>
+                Accede a tu cuenta para confirmar la suscripción de tu plan y activar tus créditos de descarga.
               </AlertDescription>
             </Alert>
           )}

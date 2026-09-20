@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
+import { useCredits } from '@/hooks/use-credits';
 import { CreditsBadge } from '@/components/credits/credits-badge';
+import { CheckoutModal } from '@/components/payments/checkout-modal';
 import { Plan, PlanType } from '@/types/plan.types';
 import {
   Disc3,
@@ -35,7 +38,6 @@ const planTypeLabels: Record<PlanType, { label: string; className: string }> = {
   },
 };
 
-// Planes predeterminados de demostración en caso de que el catálogo aún no tenga registros en base de datos
 const fallbackPlans: Plan[] = [
   {
     id: 'plan-starter-monthly',
@@ -98,12 +100,20 @@ const fallbackPlans: Plan[] = [
   },
 ];
 
-export default function PlansPage() {
+function PlansContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
+  const { refetch: refetchCredits } = useCredits();
+
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Estado del modal de Checkout
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<Plan | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -139,6 +149,32 @@ export default function PlansPage() {
       isMounted = false;
     };
   }, []);
+
+  // Abrir automáticamente el modal si el usuario retornó de login con ?planId=...
+  useEffect(() => {
+    const planIdParam = searchParams.get('planId');
+    if (planIdParam && plans.length > 0 && isAuthenticated && !isCheckoutOpen && !selectedPlanForCheckout) {
+      const matchedPlan = plans.find((p) => p.id === planIdParam);
+      if (matchedPlan) {
+        setSelectedPlanForCheckout(matchedPlan);
+        setIsCheckoutOpen(true);
+      }
+    }
+  }, [searchParams, plans, isAuthenticated, isCheckoutOpen, selectedPlanForCheckout]);
+
+  const handleChoosePlan = (plan: Plan) => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/plans&planId=${encodeURIComponent(plan.id)}`);
+      return;
+    }
+    setSelectedPlanForCheckout(plan);
+    setIsCheckoutOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    // Sincronizar reactivamente el balance de créditos en el header
+    await refetchCredits();
+  };
 
   const filteredPlans = plans.filter((plan) => {
     if (selectedType === 'ALL') return true;
@@ -214,78 +250,89 @@ export default function PlansPage() {
           {/* Billing filter tabs */}
           <div className="flex items-center justify-center pt-4">
             <div
+              className="inline-flex p-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm"
               role="tablist"
-              aria-label="Filtro de planes por ciclo de facturación"
-              className="inline-flex p-1 bg-slate-200/70 rounded-2xl border border-slate-200"
+              aria-label="Filtro de periodicidad de facturación"
             >
               <button
+                type="button"
                 role="tab"
                 aria-selected={selectedType === 'ALL'}
                 onClick={() => setSelectedType('ALL')}
-                className={`min-h-[40px] px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                   selectedType === 'ALL'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
+                id="filter-tab-all"
               >
                 Todos los planes
               </button>
+
               <button
+                type="button"
                 role="tab"
                 aria-selected={selectedType === 'MONTHLY'}
                 onClick={() => setSelectedType('MONTHLY')}
-                className={`min-h-[40px] px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                   selectedType === 'MONTHLY'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
+                id="filter-tab-monthly"
               >
                 Mensuales
               </button>
+
               <button
+                type="button"
                 role="tab"
                 aria-selected={selectedType === 'YEARLY'}
                 onClick={() => setSelectedType('YEARLY')}
-                className={`min-h-[40px] px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                   selectedType === 'YEARLY'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
+                id="filter-tab-yearly"
               >
-                Anuales
-              </button>
-              <button
-                role="tab"
-                aria-selected={selectedType === 'CREDITS_PACK'}
-                onClick={() => setSelectedType('CREDITS_PACK')}
-                className={`min-h-[40px] px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
-                  selectedType === 'CREDITS_PACK'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Paquetes
+                Anuales (Ahorro)
               </button>
             </div>
           </div>
         </section>
 
         {errorMessage && (
-          <Alert variant="error" className="max-w-2xl mx-auto">
-            <AlertTitle>Error al consultar el catálogo</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
+          <div className="max-w-2xl mx-auto">
+            <Alert variant="info">
+              <AlertTitle>Catálogo de planes</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </div>
         )}
 
-        {/* Loading Spinner */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
               <Disc3 className="w-6 h-6 animate-spin" aria-hidden="true" />
             </div>
-            <p className="text-sm text-slate-500 font-medium">
-              Cargando catálogo de planes...
+            <p className="text-sm font-medium text-slate-500">Cargando membresías disponibles...</p>
+          </div>
+        ) : filteredPlans.length === 0 ? (
+          <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200 max-w-lg mx-auto space-y-3">
+            <Music className="w-10 h-10 text-slate-400 mx-auto" aria-hidden="true" />
+            <h3 className="text-lg font-bold text-slate-900">No hay planes en esta categoría</h3>
+            <p className="text-xs text-slate-500">
+              Selecciona &quot;Todos los planes&quot; para explorar el catálogo completo de membresías.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedType('ALL')}
+              className="mt-2"
+            >
+              Ver todos los planes
+            </Button>
           </div>
         ) : (
           /* Plans Cards Grid */
@@ -371,21 +418,20 @@ export default function PlansPage() {
                   </CardContent>
 
                   <CardFooter className="border-t border-slate-100 pt-4 mt-auto">
-                    <Link
-                      href={`/register?plan=${plan.id}`}
-                      className="w-full"
+                    <Button
+                      type="button"
+                      variant={isPopular ? 'primary' : 'outline'}
+                      className="w-full justify-center group min-h-[44px]"
+                      onClick={() => handleChoosePlan(plan)}
+                      id={`choose-plan-${plan.id}-btn`}
+                      aria-label={`Elegir plan ${plan.name}`}
                     >
-                      <Button
-                        variant={isPopular ? 'primary' : 'outline'}
-                        className="w-full justify-center group min-h-[44px]"
-                      >
-                        <span>Elegir plan</span>
-                        <ArrowRight
-                          className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1"
-                          aria-hidden="true"
-                        />
-                      </Button>
-                    </Link>
+                      <span>Elegir plan</span>
+                      <ArrowRight
+                        className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1"
+                        aria-hidden="true"
+                      />
+                    </Button>
                   </CardFooter>
                 </Card>
               );
@@ -420,6 +466,36 @@ export default function PlansPage() {
           </div>
         </section>
       </main>
+
+      {/* Modal de Checkout Flat SaaS */}
+      <CheckoutModal
+        plan={selectedPlanForCheckout}
+        isOpen={isCheckoutOpen}
+        onClose={() => {
+          setIsCheckoutOpen(false);
+          setSelectedPlanForCheckout(null);
+        }}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
+  );
+}
+
+export default function PlansPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+              <Disc3 className="w-6 h-6 animate-spin" aria-hidden="true" />
+            </div>
+            <p className="text-sm text-slate-500 font-medium">Cargando planes...</p>
+          </div>
+        </div>
+      }
+    >
+      <PlansContent />
+    </Suspense>
   );
 }
