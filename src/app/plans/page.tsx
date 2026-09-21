@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -9,14 +8,14 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { useCredits } from '@/hooks/use-credits';
-import { CreditsBadge } from '@/components/credits/credits-badge';
 import { CheckoutModal } from '@/components/payments/checkout-modal';
 import { Plan, PlanType } from '@/types/plan.types';
+import { GlobalHeader } from '@/components/layout/global-header';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import {
   Disc3,
   CheckCircle2,
   Sparkles,
-  ArrowLeft,
   ArrowRight,
   Music,
   ShieldCheck,
@@ -126,71 +125,18 @@ function PlansContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Public Navigation Header */}
-      <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 sm:gap-2.5 text-slate-900 font-bold text-base sm:text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
-          >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
-              <Disc3 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin-slow" aria-hidden="true" />
-            </div>
-            <span>
-              Remix<span className="text-emerald-600">Dock</span>
-            </span>
-          </Link>
+      {/* Header Canónico Global */}
+      <GlobalHeader />
 
-          <nav className="flex items-center gap-1.5 sm:gap-3">
-            <Link
-              href="/"
-              className="min-h-[44px] min-w-[44px] px-2 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              aria-label="Volver al inicio"
-            >
-              <ArrowLeft className="w-4 h-4 sm:mr-1.5" aria-hidden="true" />
-              <span className="hidden sm:inline">Inicio</span>
-            </Link>
-
-            <Link
-              href="/catalog"
-              className="min-h-[44px] px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              id="plans-catalog-link"
-            >
-              Catálogo
-            </Link>
-
-            {isAuthenticated ? (
-              <div className="flex items-center gap-1.5 sm:gap-2.5">
-                <CreditsBadge />
-                <Link
-                  href="/library"
-                  className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                  id="plans-library-link"
-                >
-                  <span className="hidden sm:inline">Biblioteca</span>
-                  <span className="sm:hidden">Música</span>
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="min-h-[44px] min-w-[44px] px-2 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                  id="plans-dashboard-link"
-                  aria-label="Ir al panel del estudio"
-                >
-                  <span className="hidden sm:inline">Dashboard</span>
-                  <span className="sm:hidden">Estudio</span>
-                </Link>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              >
-                Iniciar sesión
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
+      {/* Breadcrumbs de Navegación */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4">
+        <Breadcrumbs
+          items={[
+            { label: 'Inicio', href: '/' },
+            { label: 'Planes y Membresías' },
+          ]}
+        />
+      </div>
 
       {/* Hero Section */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10 sm:space-y-12 overflow-x-hidden">

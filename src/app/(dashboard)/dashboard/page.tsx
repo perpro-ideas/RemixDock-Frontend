@@ -5,21 +5,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useCredits } from '@/hooks/use-credits';
-import { CreditsBadge } from '@/components/credits/credits-badge';
-import { Button } from '@/components/ui/button';
+import { GlobalHeader } from '@/components/layout/global-header';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Role } from '@/types/auth.types';
 import { CreditEntryType } from '@/types/credits.types';
 import {
   Disc3,
-  LogOut,
   User as UserIcon,
   Mail,
   Shield,
   Calendar,
   Compass,
   FolderHeart,
-  Settings,
   Sparkles,
   Wallet,
   ArrowUpRight,
@@ -98,7 +95,7 @@ function formatMovementDate(dateStr: string): string {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const {
     balance,
     history,
@@ -106,7 +103,6 @@ export default function DashboardPage() {
     refetch: refetchCredits,
   } = useCredits();
 
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isRefreshingCredits, setIsRefreshingCredits] = useState(false);
 
   useEffect(() => {
@@ -114,18 +110,6 @@ export default function DashboardPage() {
       router.replace('/login');
     }
   }, [isLoading, isAuthenticated, router]);
-
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await logout();
-      router.push('/login');
-    } catch {
-      router.push('/login');
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   const handleManualRefetch = async () => {
     try {
@@ -164,91 +148,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Navigation Header */}
-      <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            id="dashboard-home-link"
-            aria-label="Ir a la página de inicio"
-            className="flex items-center gap-2.5 sm:gap-3 rounded-lg p-1 hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-          >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0">
-              <Disc3 className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-            </div>
-            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">
-              Remix<span className="text-emerald-600">Dock</span>
-              <span className="hidden sm:inline text-xs text-slate-400 font-normal ml-1 border-l border-slate-200 pl-2">
-                Studio
-              </span>
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-1.5 sm:gap-3 justify-end">
-            <span className={`hidden sm:inline-flex ${roleInfo.className}`}>
-              {roleInfo.label}
-            </span>
-
-            {/* Header Credits Badge */}
-            <CreditsBadge />
-
-            <Link
-              href="/library"
-              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
-              id="dashboard-library-header-btn"
-              aria-label="Ir a mi biblioteca musical"
-            >
-              <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-              <span className="hidden sm:inline">Biblioteca</span>
-            </Link>
-
-            <Link
-              href="/catalog"
-              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
-              id="dashboard-catalog-header-btn"
-              aria-label="Ir al catálogo musical"
-            >
-              <Compass className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-              <span className="hidden sm:inline">Catálogo</span>
-            </Link>
-
-            {user.role === 'ADMIN' && (
-              <Link
-                href="/admin/plans"
-                className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 min-h-[44px] min-w-[44px]"
-                id="admin-plans-header-btn"
-                aria-label="Administrar planes"
-              >
-                <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
-                <span className="hidden sm:inline">Administrar planes</span>
-              </Link>
-            )}
-
-            <Link
-              href="/profile"
-              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px] min-w-[44px]"
-              id="edit-profile-header-btn"
-              aria-label="Editar perfil"
-            >
-              <Settings className="w-4 h-4 text-slate-500" aria-hidden="true" />
-              <span className="hidden sm:inline">Editar perfil</span>
-            </Link>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleLogout}
-              isLoading={isLoggingOut}
-              loadingText=""
-              className="gap-2 min-h-[44px] min-w-[44px] px-2.5 sm:px-3"
-              aria-label="Cerrar sesión"
-            >
-              <LogOut className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Cerrar sesión</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      {/* Header Canónico Global */}
+      <GlobalHeader maxWidth="6xl" />
 
       {/* Main Content */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
@@ -595,77 +496,93 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-3">
-              <Link
-                href="/catalog"
-                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                id="dashboard-catalog-card-link"
-              >
-                <div className="flex items-center gap-2 text-slate-900 font-semibold">
-                  <Compass className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  <span>Catálogo de Remixes</span>
+            <CardContent className="space-y-4">
+              {/* Grupo 1: Cabina y Catálogo */}
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
+                  CABINA Y CATÁLOGO
                 </div>
-                <p className="text-slate-600 leading-relaxed">
-                  Explora y reproduce versiones exclusivas de la comunidad.
-                </p>
-              </Link>
 
-              <Link
-                href="/library"
-                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 hover:border-slate-300 active:bg-slate-100 border border-slate-200/80 text-xs space-y-1 cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
-                id="dashboard-library-module-link"
-              >
-                <div className="flex items-center gap-2 text-slate-900 font-semibold">
-                  <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  <span>Mi Biblioteca</span>
-                </div>
-                <p className="text-slate-600 leading-relaxed">
-                  Accede a tus pistas descargadas y solicitudes activas.
-                </p>
-              </Link>
-
-              <Link
-                href="/plans"
-                className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                id="explore-plans-link"
-              >
-                <div className="flex items-center gap-2 text-slate-900 font-semibold">
-                  <Sparkles className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  <span>Planes de Suscripción</span>
-                </div>
-                <p className="text-slate-600 leading-relaxed">
-                  Membresías con acceso a stems exclusivos y descargas directas.
-                </p>
-              </Link>
-
-              {user.role === 'ADMIN' && (
                 <Link
-                  href="/admin/plans"
-                  className="block p-4 rounded-xl bg-violet-50/70 hover:bg-violet-100/70 border border-violet-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-                  id="admin-plans-card-link"
+                  href="/catalog"
+                  className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  id="dashboard-catalog-card-link"
                 >
-                  <div className="flex items-center gap-2 text-violet-900 font-semibold">
-                    <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
-                    <span>Administración de Planes</span>
+                  <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                    <Compass className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    <span>Catálogo de Remixes</span>
                   </div>
-                  <p className="text-violet-700 leading-relaxed">
-                    Gestiona el catálogo de membresías, precios y visibilidad.
+                  <p className="text-slate-600 leading-relaxed">
+                    Explora y reproduce versiones exclusivas de la comunidad.
                   </p>
                 </Link>
+
+                <Link
+                  href="/library"
+                  className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 hover:border-slate-300 active:bg-slate-100 border border-slate-200/80 text-xs space-y-1 cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+                  id="dashboard-library-module-link"
+                >
+                  <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                    <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    <span>Mi Biblioteca</span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Accede a tus pistas descargadas y stems adquiridos sin costo.
+                  </p>
+                </Link>
+
+                <Link
+                  href="/plans"
+                  className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  id="explore-plans-link"
+                >
+                  <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                    <Sparkles className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    <span>Planes de Suscripción</span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Membresías con acceso a stems exclusivos y descargas directas.
+                  </p>
+                </Link>
+              </div>
+
+              {/* Grupo 2: Administración (Solo Admin) */}
+              {user.role === 'ADMIN' && (
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
+                    ADMINISTRACIÓN
+                  </div>
+
+                  <Link
+                    href="/admin/tracks"
+                    className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer"
+                    id="admin-tracks-card-link"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                      <Disc3 className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                      <span>Gestión de Tracks y Stems</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Sube, edita metadatos y publica nuevas pistas y stems multipista.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/admin/plans"
+                    className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer"
+                    id="admin-plans-card-link"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                      <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                      <span>Administración de Planes</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Gestiona el catálogo de membresías, precios y visibilidad.
+                    </p>
+                  </Link>
+                </div>
               )}
             </CardContent>
-
-            <CardFooter className="border-t border-slate-100">
-              <Button
-                variant="secondary"
-                onClick={handleLogout}
-                isLoading={isLoggingOut}
-                loadingText="Cerrando sesión..."
-                className="w-full"
-              >
-                Cerrar sesión
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </main>

@@ -9,35 +9,19 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ApiClientError, apiFetch } from '@/lib/api-client';
-import { Role, User, ChangePasswordResponse } from '@/types/auth.types';
+import { User, ChangePasswordResponse } from '@/types/auth.types';
+import { GlobalHeader } from '@/components/layout/global-header';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import {
   Disc3,
-  ArrowLeft,
   User as UserIcon,
   Mail,
   Shield,
   KeyRound,
   CheckCircle2,
   Lock,
-  FolderHeart,
+  ArrowLeft,
 } from 'lucide-react';
-import { CreditsBadge } from '@/components/credits/credits-badge';
-
-
-const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
-  ADMIN: {
-    label: 'Administrador',
-    className: 'bg-slate-100 text-slate-800 border border-slate-200 rounded-full px-3 py-1 font-medium text-xs',
-  },
-  REMIXER: {
-    label: 'Remixer',
-    className: 'bg-teal-50 text-teal-700 border border-teal-200/80 rounded-full px-3 py-1 font-medium text-xs',
-  },
-  USER: {
-    label: 'Usuario / DJ',
-    className: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3 py-1 font-medium text-xs',
-  },
-};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -215,50 +199,30 @@ export default function ProfilePage() {
     );
   }
 
-  const roleInfo = roleBadgeStyles[user.role] || {
-    label: user.role,
-    className: 'bg-slate-100 text-slate-700 border border-slate-200 rounded-full px-3 py-1 font-medium text-xs',
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Top Header */}
-      <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
-              aria-label="Volver al panel principal"
-              id="back-to-dashboard-btn"
-            >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Volver al estudio</span>
-              <span className="sm:hidden">Volver</span>
-            </Link>
-
-            <Link
-              href="/library"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
-              id="profile-library-link"
-            >
-              <FolderHeart className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-              <span className="hidden sm:inline">Mi Biblioteca</span>
-              <span className="sm:hidden">Biblioteca</span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <CreditsBadge />
-            <span className={`hidden sm:inline-flex ${roleInfo.className}`}>
-              {roleInfo.label}
-            </span>
-          </div>
-        </div>
-      </header>
+      {/* Header Canónico Global */}
+      <GlobalHeader maxWidth="4xl" />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6">
+        {/* Breadcrumbs de Navegación y Enlace de Retorno */}
+        <div className="flex items-center justify-between gap-2">
+          <Breadcrumbs
+            items={[
+              { label: 'Inicio', href: '/dashboard' },
+              { label: 'Mi Perfil' },
+            ]}
+          />
+          <Link
+            href="/dashboard"
+            id="back-to-dashboard-btn"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Volver al Dashboard</span>
+          </Link>
+        </div>
         {/* Page Title & Intro */}
         <section className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">

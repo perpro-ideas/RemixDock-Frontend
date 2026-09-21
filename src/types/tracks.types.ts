@@ -41,15 +41,50 @@ export interface Track {
   key?: string; // Alias de clave Camelot para compatibilidad
   durationSeconds?: number; // Duración en segundos retornada por el backend
   duration?: number; // Alias de duración para compatibilidad
-  previewUrl: string;
+  previewUrl?: string;
+  previewAudioUrl?: string;
   coverUrl?: string;
   creditCost: number;
   stemsCount?: number;
   stems?: Stem[];
-  downloadsCount?: number;
+  isPublished?: boolean;
+  fileUrl?: string;
+  audioUrl?: string;
+  downloadAudioUrl?: string;
+  coverImageUrl?: string;
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface CreateStemPayload {
+  name: string;
+  type: StemType;
+  audioUrl?: string;
+  fileUrl?: string;
+  creditCost?: number;
+}
+
+export interface CreateTrackPayload {
+  title: string;
+  artist: string;
+  remixer?: string;
+  version?: string;
+  genreId?: string;
+  bpm: number;
+  musicalKey?: string;
+  durationSeconds?: number;
+  creditCost: number;
+  previewAudioUrl?: string;
+  previewUrl?: string;
+  downloadAudioUrl?: string;
+  fileUrl?: string;
+  coverImageUrl?: string;
+  coverUrl?: string;
+  isPublished: boolean;
+  stems?: CreateStemPayload[];
+}
+
+export type UpdateTrackPayload = Partial<CreateTrackPayload>;
 
 export interface PaginatedTracksResponse {
   items: Track[];

@@ -2,97 +2,15 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
-import { CreditsBadge } from '@/components/credits/credits-badge';
-import { Disc3, Radio, Music, Sparkles, ArrowRight, ShieldCheck, Zap, LogOut } from 'lucide-react';
+import { GlobalHeader } from '@/components/layout/global-header';
+import { Radio, Music, Sparkles, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export default function HomePage() {
-  const { isAuthenticated, logout } = useAuth();
-
+  const { isAuthenticated } = useAuth();
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Header / Navegación */}
-      <header className="border-b border-slate-200/80 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-slate-900 font-bold text-base sm:text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
-          >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
-              <Disc3 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin-slow" aria-hidden="true" />
-            </div>
-            <span>
-              Remix<span className="text-emerald-600">Dock</span>
-            </span>
-          </Link>
-
-          <nav aria-label="Navegación principal" className="flex items-center gap-1.5 sm:gap-3">
-            <Link
-              href="/catalog"
-              className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              id="nav-catalog-link"
-            >
-              Catálogo
-            </Link>
-            <Link
-              href="/plans"
-              className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              id="nav-plans-link"
-            >
-              Planes
-            </Link>
-
-            {isAuthenticated ? (
-              <div className="flex items-center gap-1.5 sm:gap-3">
-                <CreditsBadge />
-                <Link
-                  href="/library"
-                  id="landing-library-link"
-                  className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                >
-                  <span className="hidden sm:inline">Biblioteca</span>
-                  <span className="sm:hidden">Mi Música</span>
-                </Link>
-                <Link
-                  href="/dashboard"
-                  id="landing-dashboard-link"
-                  className="min-h-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white whitespace-nowrap"
-                >
-                  <span className="hidden sm:inline">Dashboard</span>
-                  <span className="sm:hidden">Estudio</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => logout()}
-                  id="landing-logout-btn"
-                  className="min-h-[44px] px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                  aria-label="Cerrar sesión"
-                >
-                  <LogOut className="w-4 h-4 sm:mr-1.5" aria-hidden="true" />
-                  <span className="hidden sm:inline">Salir</span>
-                </button>
-              </div>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  id="landing-login-link"
-                  className="min-h-[44px] px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                >
-                  <span className="hidden sm:inline">Iniciar sesión</span>
-                  <span className="sm:hidden">Entrar</span>
-                </Link>
-                <Link
-                  href="/register"
-                  id="landing-register-link"
-                  className="min-h-[44px] px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white whitespace-nowrap"
-                >
-                  Crear cuenta
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      {/* Header Canónico Global */}
+      <GlobalHeader />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center">

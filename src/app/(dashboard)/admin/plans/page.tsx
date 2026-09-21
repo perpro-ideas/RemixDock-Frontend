@@ -9,9 +9,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
 import { Plan, PlanType, CreatePlanPayload } from '@/types/plan.types';
+import { GlobalHeader } from '@/components/layout/global-header';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import {
   Disc3,
-  ArrowLeft,
   Plus,
   Shield,
   CheckCircle2,
@@ -233,35 +234,19 @@ export default function AdminPlansPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Top Header */}
-      <header className="border-b border-slate-200/80 bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
-              id="back-to-dashboard-admin-btn"
-            >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Volver al estudio</span>
-            </Link>
-
-            <span className="text-xs text-slate-400 font-normal border-l border-slate-200 pl-3">
-              Administración de Membresías
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="bg-violet-50 text-violet-700 border border-violet-200/80 rounded-full px-3 py-1 font-semibold text-xs flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Modo Administrador</span>
-            </span>
-          </div>
-        </div>
-      </header>
+      {/* Header Canónico Global */}
+      <GlobalHeader />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6">
+        {/* Breadcrumbs de Navegación */}
+        <Breadcrumbs
+          items={[
+            { label: 'Inicio', href: '/dashboard' },
+            { label: 'Administración' },
+            { label: 'Planes' },
+          ]}
+        />
         {/* Header Section with Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
