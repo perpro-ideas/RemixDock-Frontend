@@ -477,7 +477,7 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
                 {downloadFeedback.showPlansLink && (
                   <div className="mt-2">
                     <Link
-                      href="/plans"
+                      href="/pricing?tab=credits"
                       className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                       id="modal-go-to-plans-link"
                     >

@@ -126,7 +126,7 @@ function LoginForm() {
             </Alert>
           )}
 
-          {redirectParam === '/plans' && !errorMessage && !isJustRegistered && !isPasswordChanged && !isResetSuccess && (
+          {(redirectParam === '/plans' || redirectParam === '/pricing') && !errorMessage && !isJustRegistered && !isPasswordChanged && !isResetSuccess && (
             <Alert variant="info" id="plan-redirect-alert">
               <AlertTitle>Inicia sesión para continuar</AlertTitle>
               <AlertDescription>

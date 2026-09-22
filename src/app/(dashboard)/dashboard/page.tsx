@@ -243,7 +243,7 @@ export default function DashboardPage() {
 
               <CardFooter className="pt-2 pb-5 border-t border-slate-100 flex flex-col gap-2">
                 <Link
-                  href="/plans"
+                  href="/pricing?tab=credits"
                   id="recharge-credits-btn"
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
                 >
@@ -283,7 +283,7 @@ export default function DashboardPage() {
                     </p>
                     <div className="mt-4">
                       <Link
-                        href="/plans"
+                        href="/pricing?tab=credits"
                         className="inline-flex items-center text-xs font-semibold text-emerald-600 hover:text-emerald-700 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded min-h-[44px] px-2 py-1"
                       >
                         Ver planes y adquirir créditos →
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                 </Link>
 
                 <Link
-                  href="/plans"
+                  href="/pricing?tab=plans"
                   className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   id="explore-plans-link"
                 >

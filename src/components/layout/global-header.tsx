@@ -36,7 +36,7 @@ export function GlobalHeader({ className = '', maxWidth = '7xl' }: GlobalHeaderP
 
   const isCatalog = pathname.startsWith('/catalog');
   const isLibrary = pathname.startsWith('/library');
-  const isPlans = pathname.startsWith('/plans');
+  const isPricing = pathname.startsWith('/pricing') || pathname.startsWith('/plans');
 
   return (
     <header className={`border-b border-slate-200/80 bg-white sticky top-0 z-40 ${className}`}>
@@ -87,17 +87,18 @@ export function GlobalHeader({ className = '', maxWidth = '7xl' }: GlobalHeaderP
           </Link>
 
           <Link
-            href="/plans"
+            href="/pricing"
             id="nav-plans-link"
-            aria-label="Ver Planes de Suscripción"
+            data-testid="nav-pricing-link"
+            aria-label="Ver Planes y Precios"
             className={`min-h-[44px] px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors inline-flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-              isPlans
+              isPricing
                 ? 'bg-slate-100 text-slate-900 font-semibold border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
             }`}
           >
             <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
-            <span>Planes</span>
+            <span>Pricing</span>
           </Link>
         </nav>
 
