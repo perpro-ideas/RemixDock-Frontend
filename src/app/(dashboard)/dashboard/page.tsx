@@ -23,6 +23,8 @@ import {
   ArrowDownLeft,
   RefreshCw,
   History,
+  Music2,
+  ListChecks,
 } from 'lucide-react';
 
 const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
@@ -532,6 +534,20 @@ export default function DashboardPage() {
                 </Link>
 
                 <Link
+                  href="/requests"
+                  className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 hover:border-slate-300 active:bg-slate-100 border border-slate-200/80 text-xs space-y-1 cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 min-h-[44px]"
+                  id="dashboard-requests-card-link"
+                >
+                  <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                    <Music2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    <span>Peticiones de Remixes</span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Encarga versiones exclusivas para tu repertorio con tu cupo o créditos.
+                  </p>
+                </Link>
+
+                <Link
                   href="/pricing?tab=plans"
                   className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   id="explore-plans-link"
@@ -578,6 +594,20 @@ export default function DashboardPage() {
                     </div>
                     <p className="text-slate-600 leading-relaxed">
                       Gestiona el catálogo de membresías, precios y visibilidad.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/admin/requests"
+                    className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer"
+                    id="admin-requests-card-link"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                      <ListChecks className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                      <span>Gestión de Peticiones</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Supervisa, asigna productores y entrega remixes a la comunidad.
                     </p>
                   </Link>
                 </div>

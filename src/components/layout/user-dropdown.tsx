@@ -11,6 +11,8 @@ import {
   Shield,
   LogOut,
   ChevronDown,
+  Music2,
+  ListChecks,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
@@ -76,7 +78,8 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
         pathname.startsWith('/dashboard') ||
         pathname.startsWith('/admin') ||
         pathname.startsWith('/profile') ||
-        pathname.startsWith('/library');
+        pathname.startsWith('/library') ||
+        pathname.startsWith('/requests');
       if (isProtectedRoute) {
         router.push('/login');
       }
@@ -193,6 +196,17 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
             </Link>
 
             <Link
+              href="/requests"
+              role="menuitem"
+              id="user-dropdown-requests-link"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:bg-slate-50 min-h-[40px]"
+            >
+              <Music2 className="w-4 h-4 text-slate-500" aria-hidden="true" />
+              <span>Mis Peticiones</span>
+            </Link>
+
+            <Link
               href="/profile"
               role="menuitem"
               id="edit-profile-header-btn"
@@ -230,6 +244,17 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
               >
                 <Shield className="w-4 h-4 text-violet-600" aria-hidden="true" />
                 <span>Administración de Planes</span>
+              </Link>
+
+              <Link
+                href="/admin/requests"
+                role="menuitem"
+                id="admin-requests-header-btn"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-violet-700 hover:bg-violet-50 transition-colors focus-visible:outline-none focus-visible:bg-violet-50 min-h-[40px]"
+              >
+                <ListChecks className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                <span>Gestión de Peticiones</span>
               </Link>
             </div>
           )}
