@@ -8,7 +8,10 @@ import { useCredits } from '@/hooks/use-credits';
 import { GlobalHeader } from '@/components/layout/global-header';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Role } from '@/types/auth.types';
-import { CreditEntryType } from '@/types/credits.types';
+import {
+  CREDIT_ENTRY_LABELS,
+  CREDIT_ENTRY_BADGES,
+} from '@/types/credits.types';
 import {
   Disc3,
   User as UserIcon,
@@ -25,6 +28,8 @@ import {
   History,
   Music2,
   ListChecks,
+  Sliders,
+  Banknote,
 } from 'lucide-react';
 
 const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
@@ -39,45 +44,6 @@ const roleBadgeStyles: Record<Role, { label: string; className: string }> = {
   USER: {
     label: 'Usuario / DJ',
     className: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3 py-1 font-medium text-xs',
-  },
-};
-
-const movementTypeLabels: Record<CreditEntryType, string> = {
-  PLAN_SUBSCRIPTION: 'Membresía',
-  TOPUP_PURCHASE: 'Recarga de Créditos',
-  REMIX_DOWNLOAD: 'Descarga',
-  REMIX_REQUEST: 'Petición Exclusiva',
-  ADMIN_ADJUSTMENT: 'Ajuste de Cuenta',
-};
-
-const movementTypeBadgeStyles: Record<string, { label: string; className: string }> = {
-  PLAN_SUBSCRIPTION: {
-    label: 'Membresía',
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  },
-  SUBSCRIPTION: {
-    label: 'Membresía',
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  },
-  TOPUP_PURCHASE: {
-    label: 'Recarga de Créditos',
-    className: 'bg-teal-50 text-teal-700 border-teal-200',
-  },
-  TOPUP: {
-    label: 'Recarga de Créditos',
-    className: 'bg-teal-50 text-teal-700 border-teal-200',
-  },
-  REMIX_DOWNLOAD: {
-    label: 'Descarga',
-    className: 'bg-slate-100 text-slate-700 border-slate-200',
-  },
-  REMIX_REQUEST: {
-    label: 'Petición Exclusiva',
-    className: 'bg-amber-50 text-amber-700 border-amber-200',
-  },
-  ADMIN_ADJUSTMENT: {
-    label: 'Ajuste de Cuenta',
-    className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
   },
 };
 
@@ -325,8 +291,12 @@ export default function DashboardPage() {
                                   </div>
                                 </td>
                                 <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                                  <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200/60">
-                                    {movementTypeLabels[entry.type] || entry.type}
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${
+                                      CREDIT_ENTRY_BADGES[entry.type] || 'bg-slate-100 text-slate-700 border-slate-200'
+                                    }`}
+                                  >
+                                    {CREDIT_ENTRY_LABELS[entry.type] || entry.type}
                                   </span>
                                 </td>
                                 <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
@@ -374,19 +344,13 @@ export default function DashboardPage() {
                                   {entry.description}
                                 </p>
                                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 flex-wrap">
-                                  {(() => {
-                                    const badge = movementTypeBadgeStyles[entry.type] || {
-                                      label: movementTypeLabels[entry.type] || entry.type,
-                                      className: 'bg-slate-100 text-slate-700 border-slate-200',
-                                    };
-                                    return (
-                                      <span
-                                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badge.className}`}
-                                      >
-                                        {badge.label}
-                                      </span>
-                                    );
-                                  })()}
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                      CREDIT_ENTRY_BADGES[entry.type] || 'bg-slate-100 text-slate-700 border-slate-200'
+                                    }`}
+                                  >
+                                    {CREDIT_ENTRY_LABELS[entry.type] || entry.type}
+                                  </span>
                                   <span>•</span>
                                   <span>{formatMovementDate(entry.createdAt)}</span>
                                 </div>
@@ -608,6 +572,43 @@ export default function DashboardPage() {
                     </div>
                     <p className="text-slate-600 leading-relaxed">
                       Supervisa, asigna productores y entrega remixes a la comunidad.
+                    </p>
+                  </Link>
+
+                  <Link
+                    href="/admin/payouts"
+                    className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer"
+                    id="admin-payouts-card-link"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                      <Banknote className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                      <span>Auditoría de Retiros</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Audita solicitudes de fondos y autoriza liquidaciones contables a productores.
+                    </p>
+                  </Link>
+                </div>
+              )}
+
+              {/* Grupo 3: Studio Remixer (Solo Remixer y Admin) */}
+              {(user.role === 'REMIXER' || user.role === 'ADMIN') && (
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
+                    STUDIO Y PRODUCCIÓN
+                  </div>
+
+                  <Link
+                    href="/remixer/studio"
+                    className="block p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-xs space-y-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
+                    id="dashboard-remixer-studio-link"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                      <Sliders className="w-4 h-4 text-amber-600" aria-hidden="true" />
+                      <span>Studio de Producción</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Supervisa encargos asignados, saldo de regalías y entregas de cabina.
                     </p>
                   </Link>
                 </div>

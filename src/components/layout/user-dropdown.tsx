@@ -13,6 +13,10 @@ import {
   ChevronDown,
   Music2,
   ListChecks,
+  Sliders,
+  TrendingUp,
+  DollarSign,
+  Banknote,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
@@ -94,6 +98,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
     .slice(0, 2)
     .toUpperCase();
   const isAdmin = user.role === 'ADMIN';
+  const isRemixer = user.role === 'REMIXER' || user.role === 'ADMIN';
 
   return (
     <div ref={dropdownRef} className={`relative inline-block text-left ${className}`}>
@@ -159,6 +164,11 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                       <Shield className="w-3 h-3" aria-hidden="true" />
                       <span>Administrador</span>
+                    </span>
+                  ) : user.role === 'REMIXER' ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                      <Disc3 className="w-3 h-3" aria-hidden="true" />
+                      <span>Productor / Remixer</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
@@ -255,6 +265,58 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
               >
                 <ListChecks className="w-4 h-4 text-violet-600" aria-hidden="true" />
                 <span>Gestión de Peticiones</span>
+              </Link>
+
+              <Link
+                href="/admin/payouts"
+                role="menuitem"
+                id="admin-payouts-header-btn"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-violet-700 hover:bg-violet-50 transition-colors focus-visible:outline-none focus-visible:bg-violet-50 min-h-[40px]"
+              >
+                <Banknote className="w-4 h-4 text-violet-600" aria-hidden="true" />
+                <span>Auditoría de Retiros</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Sección Cabina de Producción (Rol REMIXER o ADMIN) */}
+          {isRemixer && (
+            <div className="border-t border-slate-100 pt-2 pb-1.5">
+              <div className="px-4 pb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                CABINA DE PRODUCCIÓN
+              </div>
+              <Link
+                href="/remixer/studio"
+                role="menuitem"
+                id="remixer-studio-header-btn"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-amber-900 hover:bg-amber-50/70 transition-colors focus-visible:outline-none focus-visible:bg-amber-50 min-h-[40px]"
+              >
+                <Sliders className="w-4 h-4 text-amber-700" aria-hidden="true" />
+                <span>Studio de Producción</span>
+              </Link>
+
+              <Link
+                href="/remixer/earnings"
+                role="menuitem"
+                id="remixer-earnings-header-btn"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-amber-900 hover:bg-amber-50/70 transition-colors focus-visible:outline-none focus-visible:bg-amber-50 min-h-[40px]"
+              >
+                <TrendingUp className="w-4 h-4 text-amber-700" aria-hidden="true" />
+                <span>Mis Regalías y Libro Mayor</span>
+              </Link>
+
+              <Link
+                href="/remixer/payouts"
+                role="menuitem"
+                id="remixer-payouts-header-btn"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-amber-900 hover:bg-amber-50/70 transition-colors focus-visible:outline-none focus-visible:bg-amber-50 min-h-[40px]"
+              >
+                <DollarSign className="w-4 h-4 text-amber-700" aria-hidden="true" />
+                <span>Centro de Retiros</span>
               </Link>
             </div>
           )}
