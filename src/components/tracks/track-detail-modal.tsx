@@ -20,12 +20,15 @@ import {
   AlertCircle,
   FileAudio,
   Download,
+  FolderArchive,
 } from 'lucide-react';
+import { downloadStemsZip } from '@/lib/download-stream.util';
 
-interface TrackDetailModalProps {
+export interface TrackDetailModalProps {
   track: Track | null;
   isOpen: boolean;
   onClose: () => void;
+  isAcquired?: boolean;
 }
 
 const defaultStemStyle = {
@@ -51,7 +54,7 @@ function formatDuration(sec?: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalProps) {
+export function TrackDetailModal({ track, isOpen, onClose, isAcquired: isAcquiredProp }: TrackDetailModalProps) {
   const router = useRouter();
   const { currentTrack, isPlaying, togglePlay } = useAudioPlayer();
   const { isAuthenticated } = useAuth();
@@ -60,6 +63,8 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
   const [detailedTrack, setDetailedTrack] = useState<Track | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [isDownloadingZip, setIsDownloadingZip] = useState<boolean>(false);
+  const [isLocallyAcquired, setIsLocallyAcquired] = useState<boolean>(false);
   const [downloadingStemId, setDownloadingStemId] = useState<string | null>(null);
   const [downloadFeedback, setDownloadFeedback] = useState<{
     type: 'success' | 'error' | 'info';
@@ -128,6 +133,26 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
     };
   }, [isOpen, track]);
 
+  // Sincronizar estado de posesión en la biblioteca del DJ
+  useEffect(() => {
+    if (isAcquiredProp !== undefined) {
+      setIsLocallyAcquired(isAcquiredProp);
+    } else if (isOpen && track?.id && isAuthenticated) {
+      apiFetch<Array<{ trackId?: string | null; stemId?: string | null }>>('/me/library')
+        .then((items) => {
+          if (Array.isArray(items)) {
+            const owned = items.some((item) => item.trackId === track.id);
+            setIsLocallyAcquired(owned);
+          }
+        })
+        .catch(() => {
+          // Ignorar error no crítico
+        });
+    } else {
+      setIsLocallyAcquired(false);
+    }
+  }, [isOpen, track?.id, isAcquiredProp, isAuthenticated]);
+
   // Bloquear scroll de fondo mientras el modal está abierto
   useEffect(() => {
     if (isOpen) {
@@ -183,11 +208,13 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
       await refetch();
 
       if (response.isRedownload) {
+        setIsLocallyAcquired(true);
         setDownloadFeedback({
           type: 'info',
           message: 'Re-descarga autorizada. Tu descarga ha comenzado sin costo de créditos.',
         });
       } else {
+        setIsLocallyAcquired(true);
         setDownloadFeedback({
           type: 'success',
           message: `¡Pista adquirida! Se han canjeado ${response.costCredits} créditos y la descarga ha comenzado.`,
@@ -211,6 +238,46 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
       }
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  // Descarga en lote de stems en ZIP al vuelo (REM-290)
+  const handleDownloadStemsZipClick = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/catalog`);
+      return;
+    }
+
+    setIsDownloadingZip(true);
+    setDownloadFeedback(null);
+
+    try {
+      const result = await downloadStemsZip(activeTrack.id, activeTrack.title);
+      await refetch();
+      setIsLocallyAcquired(true);
+      setDownloadFeedback({
+        type: 'success',
+        message: `¡Paquete de stems preparado! La descarga de ${result.fileName} ha comenzado en tu navegador.`,
+      });
+    } catch (err) {
+      const isCreditsError =
+        err instanceof ApiClientError &&
+        (err.statusCode === 400 || err.statusCode === 402 || err.message?.toLowerCase().includes('crédito'));
+
+      if (isCreditsError) {
+        setDownloadFeedback({
+          type: 'error',
+          message: 'Saldo de créditos insuficiente para descargar los stems multipista de esta pista.',
+          showPlansLink: true,
+        });
+      } else {
+        setDownloadFeedback({
+          type: 'error',
+          message: err instanceof Error ? err.message : 'Error al procesar la descarga de stems en ZIP.',
+        });
+      }
+    } finally {
+      setIsDownloadingZip(false);
     }
   };
 
@@ -511,11 +578,38 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
             )}
           </button>
 
+          {activeTrack.stems && activeTrack.stems.length > 0 && (
+            <Button
+              type="button"
+              variant={isLocallyAcquired ? 'primary' : 'secondary'}
+              onClick={handleDownloadStemsZipClick}
+              disabled={isDownloadingZip || isDownloading}
+              className="min-h-[44px] gap-2"
+              id="modal-download-zip-btn"
+            >
+              {isDownloadingZip ? (
+                <>
+                  <Disc3 className="w-4 h-4 animate-spin text-current" aria-hidden="true" />
+                  <span>Empaquetando stems...</span>
+                </>
+              ) : (
+                <>
+                  <FolderArchive className="w-4 h-4" aria-hidden="true" />
+                  <span>
+                    {isLocallyAcquired
+                      ? 'Descargar Stems (ZIP 0 cr.)'
+                      : `Descargar Stems en ZIP (${activeTrack.creditCost} cr.)`}
+                  </span>
+                </>
+              )}
+            </Button>
+          )}
+
           <Button
             type="button"
-            variant="primary"
+            variant={isLocallyAcquired ? 'secondary' : 'primary'}
             onClick={handleAcquireClick}
-            disabled={isDownloading}
+            disabled={isDownloading || isDownloadingZip}
             className="min-h-[44px] gap-2"
             id="modal-acquire-btn"
           >
@@ -527,7 +621,11 @@ export function TrackDetailModal({ track, isOpen, onClose }: TrackDetailModalPro
             ) : (
               <>
                 <Download className="w-4 h-4" aria-hidden="true" />
-                <span>Descargar master y stems ({activeTrack.creditCost} cr.)</span>
+                <span>
+                  {isLocallyAcquired
+                    ? 'Descargar Master WAV (0 cr.)'
+                    : `Descargar master y stems (${activeTrack.creditCost} cr.)`}
+                </span>
               </>
             )}
           </Button>

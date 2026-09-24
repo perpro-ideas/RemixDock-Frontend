@@ -25,7 +25,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Compass,
+  FolderArchive,
 } from 'lucide-react';
+import { downloadStemsZip } from '@/lib/download-stream.util';
 
 function formatDate(dateStr: string): string {
   try {
@@ -54,6 +56,7 @@ export default function UserLibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryFilterTab>('all');
 
   const [downloadingItemId, setDownloadingItemId] = useState<string | null>(null);
+  const [isDownloadingZipId, setIsDownloadingZipId] = useState<string | null>(null);
   const [downloadFeedback, setDownloadFeedback] = useState<{
     itemId: string;
     message: string;
@@ -198,6 +201,42 @@ export default function UserLibraryPage() {
       });
     } finally {
       setDownloadingItemId(null);
+    }
+  };
+
+  // Descarga en lote de stems en ZIP al vuelo (REM-290)
+  const handleDownloadStemsZip = async (trackId: string, trackTitle: string, itemId: string) => {
+    setIsDownloadingZipId(trackId);
+    setDownloadFeedback({
+      itemId,
+      type: 'info',
+      message: 'Preparando descarga del paquete multipista...',
+    });
+
+    try {
+      const result = await downloadStemsZip(trackId, trackTitle, { token });
+      await refetchCredits();
+      setDownloadFeedback({
+        itemId,
+        type: 'success',
+        message: `Descarga iniciada exitosamente (${result.fileName}).`,
+      });
+    } catch (err) {
+      const isCreditsError =
+        err instanceof ApiClientError &&
+        (err.statusCode === 400 || err.statusCode === 402 || err.message?.toLowerCase().includes('crédito'));
+
+      setDownloadFeedback({
+        itemId,
+        type: 'error',
+        message: isCreditsError
+          ? 'Saldo de créditos insuficiente para descargar los stems multipista de este remix.'
+          : err instanceof Error
+          ? err.message
+          : 'Error al procesar la descarga de stems en ZIP.',
+      });
+    } finally {
+      setIsDownloadingZipId(null);
     }
   };
 
@@ -563,7 +602,7 @@ export default function UserLibraryPage() {
                     </div>
 
                     {/* Acciones de la pista */}
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto justify-end">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto justify-end flex-wrap sm:flex-nowrap">
                       {parentTrack && (
                         <button
                           type="button"
@@ -581,6 +620,31 @@ export default function UserLibraryPage() {
                             <>
                               <Play className="w-3.5 h-3.5 fill-current ml-0.5" aria-hidden="true" />
                               <span>Escuchar</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      {/* Botón secundario Flat SaaS: Descargar Stems (ZIP) */}
+                      {parentTrack && (
+                        <button
+                          type="button"
+                          id={`download-zip-btn-${item.id}`}
+                          onClick={() => handleDownloadStemsZip(parentTrack.id, displayTitle, item.id)}
+                          disabled={isDownloadingZipId === parentTrack.id}
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 min-h-[44px]"
+                          title="Descargar todos los stems multipista en un archivo ZIP"
+                          aria-label={`Descargar paquete de stems en ZIP de ${displayTitle}`}
+                        >
+                          {isDownloadingZipId === parentTrack.id ? (
+                            <>
+                              <Disc3 className="w-4 h-4 animate-spin text-emerald-600" aria-hidden="true" />
+                              <span>Empaquetando stems...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FolderArchive className="w-4 h-4 text-slate-600" aria-hidden="true" />
+                              <span>Descargar Stems (ZIP)</span>
                             </>
                           )}
                         </button>
@@ -610,19 +674,23 @@ export default function UserLibraryPage() {
                     </div>
                   </div>
 
-                  {/* Feedback de re-descarga inline */}
+                  {/* Feedback de re-descarga y stems ZIP inline */}
                   {feedback && (
                     <div
                       role="alert"
                       className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 animate-in fade-in duration-150 ${
                         feedback.type === 'error'
                           ? 'bg-rose-50 border-rose-200 text-rose-800'
+                          : feedback.type === 'info'
+                          ? 'bg-sky-50 border-sky-200 text-sky-800'
                           : 'bg-emerald-50 border-emerald-200 text-emerald-800'
                       }`}
                       id={`library-feedback-alert-${item.id}`}
                     >
                       {feedback.type === 'error' ? (
                         <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" aria-hidden="true" />
+                      ) : feedback.type === 'info' ? (
+                        <Disc3 className="w-4 h-4 shrink-0 text-sky-600 animate-spin" aria-hidden="true" />
                       ) : (
                         <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" aria-hidden="true" />
                       )}
