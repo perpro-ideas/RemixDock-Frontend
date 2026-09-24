@@ -23,6 +23,7 @@ export interface Stem {
   trackId?: string;
   name: string;
   type: StemType;
+  audioUrl?: string;
   fileUrl?: string;
   waveformUrl?: string;
   sizeBytes?: number;
@@ -60,8 +61,6 @@ export interface CreateStemPayload {
   name: string;
   type: StemType;
   audioUrl?: string;
-  fileUrl?: string;
-  creditCost?: number;
 }
 
 export interface CreateTrackPayload {
@@ -75,11 +74,8 @@ export interface CreateTrackPayload {
   durationSeconds?: number;
   creditCost: number;
   previewAudioUrl?: string;
-  previewUrl?: string;
   downloadAudioUrl?: string;
-  fileUrl?: string;
   coverImageUrl?: string;
-  coverUrl?: string;
   isPublished: boolean;
   stems?: CreateStemPayload[];
 }

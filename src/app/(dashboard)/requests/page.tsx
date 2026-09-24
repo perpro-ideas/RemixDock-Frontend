@@ -16,6 +16,7 @@ import {
   RemixRequest,
   RemixRequestQuota,
   STATUS_LABELS,
+  RemixRequestsListResponse,
 } from '@/types/requests.types';
 import {
   Music2,
@@ -61,14 +62,22 @@ export default function RequestsPage() {
   }, [isAuthenticated, isAuthLoading, router]);
 
   // Carga de datos de la página
-  const loadRequestsData = useCallback(async () => {
+  // Carga de datos de la página
+  const loadRequestsData = useCallback(async (params?: { status?: string; search?: string; page?: number; limit?: number }) => {
     if (!isAuthenticated) return;
     try {
       setIsLoading(true);
       setErrorMessage(null);
 
-      // 1. Cargar peticiones del DJ
-      const requestsPromise = apiFetch<RemixRequest[]>('/remix-requests', {
+      // 1. Cargar peticiones del DJ estrictamente desde /api/v1/remix-requests/me
+      const query = new URLSearchParams();
+      if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+      if (params?.search?.trim()) query.set('search', params.search.trim());
+      if (params?.page) query.set('page', String(params.page));
+      if (params?.limit) query.set('limit', String(params.limit));
+      const queryString = query.toString() ? `?${query.toString()}` : '';
+
+      const requestsPromise = apiFetch<RemixRequestsListResponse>(`/remix-requests/me${queryString}`, {
         token: activeToken || undefined,
         headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : {},
       }).catch(() => []);
@@ -91,8 +100,11 @@ export default function RequestsPage() {
         quotaPromise,
       ]);
 
-      const requestList = Array.isArray(requestsData) ? requestsData : [];
-      setRequests(requestList);
+      // Extracción defensiva del listado:
+      const list: RemixRequest[] = Array.isArray(requestsData)
+        ? requestsData
+        : (requestsData?.items || requestsData?.data || []);
+      setRequests(list);
 
       if (creditsData) {
         setCreditsBalance(creditsData.balance || 0);
@@ -102,13 +114,23 @@ export default function RequestsPage() {
         setQuota(quotaData);
       } else {
         // Fallback cupo calculado si el endpoint de cuota no está activo
-        const planRequests = requestList.filter((r) => r.fundingType === 'INCLUDED_IN_PLAN');
+        const planRequests = list.filter((r) => r.fundingType === 'INCLUDED_IN_PLAN');
+        const usedCount = planRequests.length;
+        const remCount = Math.max(0, 2 - usedCount);
         setQuota({
-          totalMonthlyQuota: 2,
-          usedQuota: planRequests.length,
-          remainingQuota: Math.max(0, 2 - planRequests.length),
-          hasActiveSubscription: true,
           planName: 'DJ Pro Club',
+          hasSubscription: true,
+          canRequestRemix: remCount > 0,
+          monthlyLimit: 2,
+          usedThisPeriod: usedCount,
+          remaining: remCount,
+          totalMonthlyQuota: 2,
+          usedQuota: usedCount,
+          remainingQuota: remCount,
+          hasActiveSubscription: true,
+          available: remCount,
+          limit: 2,
+          used: usedCount,
         });
       }
     } catch (err) {
@@ -171,7 +193,7 @@ export default function RequestsPage() {
     return requests.filter((req) => {
       // Filtro por pestaña de estado
       if (activeTab === 'PENDING' && req.status !== 'PENDING') return false;
-      if (activeTab === 'IN_PROGRESS' && req.status !== 'IN_PROGRESS') return false;
+      if (activeTab === 'IN_PROGRESS' && req.status !== 'IN_PROGRESS' && req.status !== 'ACCEPTED') return false;
       if (activeTab === 'COMPLETED' && req.status !== 'COMPLETED') return false;
       if (activeTab === 'CANCELLED_REJECTED' && req.status !== 'CANCELLED' && req.status !== 'REJECTED') return false;
 
@@ -257,10 +279,10 @@ export default function RequestsPage() {
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider" id="quota-widget-title">
                   Cupo de Peticiones del Mes
                 </span>
-                {quota?.hasActiveSubscription ? (
+                {(quota?.hasSubscription ?? quota?.hasActiveSubscription) ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <Sparkles className="w-3 h-3" />
-                    <span>Membresía Activa: {quota.planName || 'DJ Pro Club'}</span>
+                    <span>Membresía Activa: {quota?.planName || 'DJ Pro Club'}</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
@@ -270,13 +292,13 @@ export default function RequestsPage() {
               </div>
 
               <div className="mt-3 flex flex-col sm:flex-row sm:items-baseline gap-2">
-                {quota && quota.totalMonthlyQuota > 0 ? (
+                {quota && ((quota.monthlyLimit ?? quota.totalMonthlyQuota ?? 0) > 0) ? (
                   <>
                     <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" id="quota-status-text">
-                      Has utilizado {quota.usedQuota} de {quota.totalMonthlyQuota} peticiones
+                      Has utilizado {quota.usedThisPeriod ?? quota.usedQuota ?? 0} de {quota.monthlyLimit ?? quota.totalMonthlyQuota ?? 2} peticiones
                     </span>
                     <span className="text-xs sm:text-sm text-emerald-700 font-semibold">
-                      ({quota.remainingQuota} disponible{quota.remainingQuota === 1 ? '' : 's'} en tu ciclo actual)
+                      ({quota.remaining ?? quota.remainingQuota ?? 0} disponible{(quota.remaining ?? quota.remainingQuota ?? 0) === 1 ? '' : 's'} en tu ciclo actual)
                     </span>
                   </>
                 ) : (

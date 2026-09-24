@@ -20,6 +20,7 @@ import {
   RemixRequestStatus,
   FundingType,
   STATUS_LABELS,
+  RemixRequestsListResponse,
 } from '@/types/requests.types';
 import {
   Shield,
@@ -75,12 +76,17 @@ export default function AdminRequestsPage() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const data = await apiFetch<RemixRequest[]>('/admin/remix-requests', {
+      const data = await apiFetch<RemixRequestsListResponse>('/admin/remix-requests', {
         token: activeToken || undefined,
         headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : {},
       });
 
-      setRequests(Array.isArray(data) ? data : []);
+      // Extracción defensiva del listado (soporta respuesta plana o paginada { items, total, page })
+      const requestsList: RemixRequest[] = Array.isArray(data)
+        ? data
+        : (data?.items || data?.data || []);
+
+      setRequests(requestsList);
     } catch (err) {
       if (err instanceof ApiClientError) {
         setErrorMessage(err.message || 'No fue posible cargar las peticiones administrativas.');
@@ -110,7 +116,13 @@ export default function AdminRequestsPage() {
   // Filtrado reactivo de peticiones
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
-      if (statusFilter !== 'ALL' && req.status !== statusFilter) return false;
+      if (statusFilter !== 'ALL') {
+        if (statusFilter === 'IN_PROGRESS') {
+          if (req.status !== 'IN_PROGRESS' && req.status !== 'ACCEPTED') return false;
+        } else if (req.status !== statusFilter) {
+          return false;
+        }
+      }
       if (fundingFilter !== 'ALL' && req.fundingType !== fundingFilter) return false;
 
       if (searchQuery.trim()) {
@@ -128,7 +140,7 @@ export default function AdminRequestsPage() {
 
   // Métricas rápidas
   const pendingCount = requests.filter((r) => r.status === 'PENDING').length;
-  const inProgressCount = requests.filter((r) => r.status === 'IN_PROGRESS').length;
+  const inProgressCount = requests.filter((r) => r.status === 'IN_PROGRESS' || r.status === 'ACCEPTED').length;
   const completedCount = requests.filter((r) => r.status === 'COMPLETED').length;
 
   // Si está autenticado pero no es administrador: pantalla de Acceso Restringido

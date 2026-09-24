@@ -88,7 +88,7 @@ export function TrackAdminModal({
       setMusicalKey(trackToEdit.musicalKey || trackToEdit.key || '8A');
       setDurationSeconds(String(trackToEdit.durationSeconds || trackToEdit.duration || 240));
       setCreditCost(String(trackToEdit.creditCost ?? 1));
-      setPreviewAudioUrl(trackToEdit.previewUrl || '');
+      setPreviewAudioUrl(trackToEdit.previewAudioUrl || trackToEdit.previewUrl || '');
       setDownloadAudioUrl(trackToEdit.downloadAudioUrl || trackToEdit.fileUrl || '');
       setCoverImageUrl(trackToEdit.coverImageUrl || trackToEdit.coverUrl || '');
       setIsPublished(trackToEdit.isPublished ?? true);
@@ -99,9 +99,7 @@ export function TrackAdminModal({
           trackToEdit.stems.map((s) => ({
             name: s.name,
             type: s.type,
-            audioUrl: s.fileUrl || '',
-            fileUrl: s.fileUrl || '',
-            creditCost: 1,
+            audioUrl: s.audioUrl || s.fileUrl || '',
           }))
         );
       } else {
@@ -159,8 +157,6 @@ export function TrackAdminModal({
         name: defaultName,
         type: defaultType,
         audioUrl: 'https://actions.google.com/sounds/v1/science_fiction/scifi_laser.ogg',
-        fileUrl: 'https://actions.google.com/sounds/v1/science_fiction/scifi_laser.ogg',
-        creditCost: 1,
       },
     ]);
   };
@@ -168,7 +164,7 @@ export function TrackAdminModal({
   const handleUpdateStem = (
     index: number,
     field: keyof CreateStemPayload,
-    value: string | number
+    value: string
   ) => {
     setStems((prev) => {
       const updated = [...prev];
@@ -177,14 +173,10 @@ export function TrackAdminModal({
 
       if (field === 'type') {
         updated[index] = { ...item, type: value as StemType };
-      } else if (field === 'creditCost') {
-        updated[index] = { ...item, creditCost: Number(value) || 0 };
       } else if (field === 'name') {
         updated[index] = { ...item, name: String(value) };
       } else if (field === 'audioUrl') {
-        updated[index] = { ...item, audioUrl: String(value), fileUrl: String(value) };
-      } else if (field === 'fileUrl') {
-        updated[index] = { ...item, fileUrl: String(value), audioUrl: String(value) };
+        updated[index] = { ...item, audioUrl: String(value) };
       }
       return updated;
     });
@@ -235,18 +227,13 @@ export function TrackAdminModal({
       durationSeconds: parsedDuration,
       creditCost: parsedCredits,
       previewAudioUrl: previewAudioUrl.trim() || undefined,
-      previewUrl: previewAudioUrl.trim() || undefined,
       downloadAudioUrl: downloadAudioUrl.trim() || undefined,
-      fileUrl: downloadAudioUrl.trim() || undefined,
       coverImageUrl: coverImageUrl.trim() || undefined,
-      coverUrl: coverImageUrl.trim() || undefined,
       isPublished,
       stems: stems.map((s) => ({
         name: s.name.trim(),
         type: s.type,
-        audioUrl: s.audioUrl || s.fileUrl,
-        fileUrl: s.audioUrl || s.fileUrl,
-        creditCost: typeof s.creditCost === 'number' ? s.creditCost : 1,
+        audioUrl: s.audioUrl?.trim() || undefined,
       })),
     };
 

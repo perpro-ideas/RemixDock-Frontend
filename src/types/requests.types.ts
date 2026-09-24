@@ -5,6 +5,7 @@ export type FundingType = 'INCLUDED_IN_PLAN' | 'CREDITS_BOUNTY';
 export type RemixRequestStatus =
   | 'PENDING'
   | 'IN_PROGRESS'
+  | 'ACCEPTED'
   | 'COMPLETED'
   | 'REJECTED'
   | 'CANCELLED';
@@ -21,6 +22,7 @@ export interface RemixRequest {
   artist: string;
   genreId: string;
   genre?: Genre;
+  desiredBpm?: number | null;
   targetBpm?: number | null;
   referenceUrl?: string | null;
   notes?: string | null;
@@ -47,6 +49,7 @@ export interface CreateRemixRequestPayload {
   title: string;
   artist: string;
   genreId: string;
+  desiredBpm?: number;
   targetBpm?: number;
   referenceUrl?: string;
   notes?: string;
@@ -66,14 +69,37 @@ export interface RejectRemixRequestPayload {
 export interface CompleteRemixRequestPayload {
   trackId: string;
   notes?: string;
+  isExclusive?: boolean;
+  publishToCatalog?: boolean;
 }
 
+export interface PaginatedRemixRequestsResponse {
+  items?: RemixRequest[];
+  data?: RemixRequest[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+}
+
+export type RemixRequestsListResponse = RemixRequest[] | PaginatedRemixRequestsResponse;
+
 export interface RemixRequestQuota {
-  totalMonthlyQuota: number;
-  usedQuota: number;
-  remainingQuota: number;
-  hasActiveSubscription: boolean;
-  planName?: string;
+  planName: string | null;
+  hasSubscription: boolean;
+  canRequestRemix: boolean;
+  monthlyLimit: number;
+  usedThisPeriod: number;
+  remaining: number;
+  periodEnd?: string;
+  // Alias compatibles opcionales:
+  available?: number;
+  limit?: number;
+  used?: number;
+  totalMonthlyQuota?: number;
+  usedQuota?: number;
+  remainingQuota?: number;
+  hasActiveSubscription?: boolean;
 }
 
 export const STATUS_LABELS: Record<RemixRequestStatus, { label: string; className: string; dotColor: string }> = {
@@ -83,6 +109,11 @@ export const STATUS_LABELS: Record<RemixRequestStatus, { label: string; classNam
     dotColor: 'bg-blue-500',
   },
   IN_PROGRESS: {
+    label: 'En Estudio',
+    className: 'bg-amber-50 text-amber-700 border border-amber-200/80',
+    dotColor: 'bg-amber-500',
+  },
+  ACCEPTED: {
     label: 'En Estudio',
     className: 'bg-amber-50 text-amber-700 border border-amber-200/80',
     dotColor: 'bg-amber-500',

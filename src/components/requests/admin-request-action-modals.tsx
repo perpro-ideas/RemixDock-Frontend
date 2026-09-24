@@ -17,6 +17,13 @@ import {
 /* =========================================================================
    1. MODAL: ASIGNAR REMIXER / PASAR A PRODUCCIÓN (EN ESTUDIO)
    ========================================================================= */
+export interface RemixerUser {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
 export interface AssignRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,6 +40,8 @@ export function AssignRequestModal({
   token,
 }: AssignRequestModalProps) {
   const [remixerId, setRemixerId] = useState('');
+  const [remixers, setRemixers] = useState<RemixerUser[]>([]);
+  const [isLoadingRemixers, setIsLoadingRemixers] = useState(false);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,6 +53,39 @@ export function AssignRequestModal({
       setErrorMessage(null);
     }
   }, [isOpen, request]);
+
+  // Cargar lista de productores/remixers disponibles para asignación
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    const fetchRemixers = async () => {
+      try {
+        setIsLoadingRemixers(true);
+        const data = await apiFetch<RemixerUser[] | { items?: RemixerUser[]; data?: RemixerUser[] }>(
+          '/admin/remix-requests/remixers',
+          { token: token || undefined }
+        );
+        if (isMounted) {
+          const list = Array.isArray(data)
+            ? data
+            : (data?.items || data?.data || []);
+          setRemixers(list);
+        }
+      } catch {
+        if (isMounted) {
+          setRemixers([]);
+        }
+      } finally {
+        if (isMounted) setIsLoadingRemixers(false);
+      }
+    };
+
+    fetchRemixers();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, token]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -64,6 +106,10 @@ export function AssignRequestModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    if (!remixerId) {
+      setErrorMessage('Selecciona un remixer o productor asignado.');
+      return;
+    }
     try {
       setIsSubmitting(true);
       const updated = await apiFetch<RemixRequest>(
@@ -72,7 +118,7 @@ export function AssignRequestModal({
           method: 'PATCH',
           token: token || undefined,
           body: JSON.stringify({
-            remixerId: remixerId.trim() || undefined,
+            remixerId,
             notes: notes.trim() || undefined,
           }),
         }
@@ -135,17 +181,27 @@ export function AssignRequestModal({
             </p>
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="assign-remixer-input" className="block text-xs font-semibold text-slate-800">
-              Identificador o Alias del Remixer / Productor
+          <div className="space-y-1.5">
+            <label htmlFor="remixerSelect" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+              Seleccionar Remixer / Productor Asignado *
             </label>
-            <input
-              id="assign-remixer-input"
-              placeholder="Ej. producer-01 o DJ Master Remixer"
+            <select
+              id="remixerSelect"
               value={remixerId}
               onChange={(e) => setRemixerId(e.target.value)}
-              className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            />
+              required
+              disabled={isSubmitting || isLoadingRemixers}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="">
+                {isLoadingRemixers ? 'Cargando productores...' : 'Selecciona un productor...'}
+              </option>
+              {remixers.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.username} — ({r.role === 'ADMIN' ? 'Administrador' : 'Remixer'})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1">
@@ -367,6 +423,7 @@ export function CompleteRequestModal({
   const [tracks, setTracks] = useState<Track[]>([]);
   const [selectedTrackId, setSelectedTrackId] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
+  const [isExclusive, setIsExclusive] = useState(true);
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -415,6 +472,7 @@ export function CompleteRequestModal({
 
     fetchCatalog();
     setDeliveryNotes('');
+    setIsExclusive(true);
     setErrorMessage(null);
 
     return () => {
@@ -455,6 +513,8 @@ export function CompleteRequestModal({
           body: JSON.stringify({
             trackId: selectedTrackId,
             notes: deliveryNotes.trim() || undefined,
+            isExclusive,
+            publishToCatalog: !isExclusive,
           }),
         }
       );
@@ -534,6 +594,29 @@ export function CompleteRequestModal({
                 ))
               )}
             </select>
+          </div>
+
+          {/* Switch de Exclusividad del Remix */}
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                id="isExclusiveSwitch"
+                checked={isExclusive}
+                onChange={(e) => setIsExclusive(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <div>
+                <span className="block text-sm font-semibold text-slate-900">
+                  Mantener privado y exclusivo para el DJ solicitante (Recomendado)
+                </span>
+                <span className="block text-xs text-slate-500 mt-0.5">
+                  {isExclusive
+                    ? '🔒 Pista no visible en /catalog. Únicamente el solicitante podrá reproducirla y descargarla en su biblioteca personal.'
+                    : '🌐 Pista publicada en /catalog. Disponible para toda la comunidad mediante descarga con créditos.'}
+                </span>
+              </div>
+            </label>
           </div>
 
           <div className="space-y-1">

@@ -43,14 +43,16 @@ export function CreateRequestModal({
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [genreId, setGenreId] = useState('');
-  const [targetBpm, setTargetBpm] = useState<string>('');
+  const [desiredBpm, setDesiredBpm] = useState<string>('');
   const [referenceUrl, setReferenceUrl] = useState('');
   const [notes, setNotes] = useState('');
 
   // Funding option: INCLUDED_IN_PLAN vs CREDITS_BOUNTY
-  const hasPlanQuota = Boolean(quota && quota.remainingQuota > 0);
+  const remainingQuota = quota?.remaining ?? quota?.available ?? quota?.remainingQuota ?? 0;
+  const canRequestRemix = quota?.canRequestRemix !== undefined ? quota.canRequestRemix : remainingQuota > 0;
+  const hasQuotaAvailable = Boolean(canRequestRemix && remainingQuota > 0);
   const [fundingType, setFundingType] = useState<FundingType>(
-    hasPlanQuota ? 'INCLUDED_IN_PLAN' : 'CREDITS_BOUNTY'
+    hasQuotaAvailable ? 'INCLUDED_IN_PLAN' : 'CREDITS_BOUNTY'
   );
   const [bountyCredits, setBountyCredits] = useState<number>(10);
 
@@ -106,10 +108,10 @@ export function CreateRequestModal({
   // Sincronizar modalidad por defecto según cupo al abrir
   useEffect(() => {
     if (isOpen) {
-      setFundingType(hasPlanQuota ? 'INCLUDED_IN_PLAN' : 'CREDITS_BOUNTY');
+      setFundingType(hasQuotaAvailable ? 'INCLUDED_IN_PLAN' : 'CREDITS_BOUNTY');
       setErrorMessage(null);
     }
-  }, [isOpen, hasPlanQuota]);
+  }, [isOpen, hasQuotaAvailable]);
 
   // Cerrar al pulsar Escape
   const handleKeyDown = useCallback(
@@ -169,7 +171,8 @@ export function CreateRequestModal({
         title: title.trim(),
         artist: artist.trim(),
         genreId,
-        targetBpm: targetBpm ? Number(targetBpm) : undefined,
+        desiredBpm: desiredBpm ? Number(desiredBpm) : undefined,
+        targetBpm: desiredBpm ? Number(desiredBpm) : undefined,
         referenceUrl: referenceUrl.trim() || undefined,
         notes: notes.trim() || undefined,
         fundingType,
@@ -253,31 +256,33 @@ export function CreateRequestModal({
                 type="button"
                 role="radio"
                 aria-checked={fundingType === 'INCLUDED_IN_PLAN'}
-                disabled={!hasPlanQuota}
-                onClick={() => setFundingType('INCLUDED_IN_PLAN')}
+                disabled={!hasQuotaAvailable}
+                onClick={() => {
+                  if (hasQuotaAvailable) setFundingType('INCLUDED_IN_PLAN');
+                }}
                 className={`p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between min-h-[88px] ${
                   fundingType === 'INCLUDED_IN_PLAN'
                     ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
-                    : hasPlanQuota
-                    ? 'border-slate-200 bg-white hover:bg-slate-50'
+                    : hasQuotaAvailable
+                    ? 'border-slate-200 bg-white hover:bg-slate-50 cursor-pointer'
                     : 'border-slate-200 bg-slate-50/60 opacity-60 cursor-not-allowed'
                 }`}
                 id="funding-option-plan-btn"
               >
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
                     <span>Incluido en Membresía</span>
-                  </div>
-                  {hasPlanQuota && (
-                    <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
-                      {quota?.remainingQuota} disponible{quota && quota.remainingQuota > 1 ? 's' : ''}
+                  </span>
+                  {hasQuotaAvailable && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {remainingQuota} {remainingQuota === 1 ? 'disponible' : 'disponibles'}
                     </span>
                   )}
                 </div>
                 <p className="text-[11px] text-slate-600 mt-1 leading-snug">
-                  {hasPlanQuota
-                    ? `Consume 1 de tus peticiones mensuales incluidas en tu plan ${quota?.planName || ''}.`
+                  {hasQuotaAvailable
+                    ? `Consume 1 de tus peticiones mensuales incluidas en tu plan ${quota?.planName || 'DJ Pro Club'}.`
                     : 'No tienes peticiones mensuales disponibles en tu plan actual.'}
                 </p>
               </button>
@@ -295,12 +300,12 @@ export function CreateRequestModal({
                 }`}
                 id="funding-option-bounty-btn"
               >
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
                     <Coins className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
                     <span>Recompensa en Créditos</span>
-                  </div>
-                  <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-200">
                     Saldo: {userCredits} cr.
                   </span>
                 </div>
@@ -406,12 +411,13 @@ export function CreateRequestModal({
               </label>
               <input
                 id="request-bpm-input"
+                name="desiredBpm"
                 type="number"
                 min={60}
                 max={200}
                 placeholder="Ej. 126"
-                value={targetBpm}
-                onChange={(e) => setTargetBpm(e.target.value)}
+                value={desiredBpm}
+                onChange={(e) => setDesiredBpm(e.target.value)}
                 className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               />
             </div>
