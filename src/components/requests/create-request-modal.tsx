@@ -202,12 +202,12 @@ export function CreateRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-request-title"
     >
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden text-slate-900">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden text-slate-900 transform-gpu">
         {/* Cabecera del Modal */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/70">
           <div className="flex items-center gap-2.5">
@@ -260,7 +260,7 @@ export function CreateRequestModal({
                 onClick={() => {
                   if (hasQuotaAvailable) setFundingType('INCLUDED_IN_PLAN');
                 }}
-                className={`p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between min-h-[88px] ${
+                className={`p-3.5 rounded-xl border text-left transition-colors duration-150 relative flex flex-col justify-between min-h-[88px] ${
                   fundingType === 'INCLUDED_IN_PLAN'
                     ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
                     : hasQuotaAvailable
@@ -293,7 +293,7 @@ export function CreateRequestModal({
                 role="radio"
                 aria-checked={fundingType === 'CREDITS_BOUNTY'}
                 onClick={() => setFundingType('CREDITS_BOUNTY')}
-                className={`p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between min-h-[88px] ${
+                className={`p-3.5 rounded-xl border text-left transition-colors duration-150 relative flex flex-col justify-between min-h-[88px] ${
                   fundingType === 'CREDITS_BOUNTY'
                     ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
                     : 'border-slate-200 bg-white hover:bg-slate-50'
@@ -331,7 +331,8 @@ export function CreateRequestModal({
                   max={200}
                   value={bountyCredits}
                   onChange={(e) => setBountyCredits(Number(e.target.value))}
-                  className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  autoComplete="off"
+                  className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
                 />
                 {!hasEnoughCredits && (
                   <div className="flex items-center justify-between gap-2 pt-1 text-xs text-amber-800 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
@@ -361,7 +362,7 @@ export function CreateRequestModal({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
               />
             </div>
 
@@ -375,7 +376,7 @@ export function CreateRequestModal({
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
                 required
-                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
               />
             </div>
           </div>
@@ -391,7 +392,7 @@ export function CreateRequestModal({
                 value={genreId}
                 onChange={(e) => setGenreId(e.target.value)}
                 disabled={isLoadingGenres}
-                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
               >
                 {isLoadingGenres ? (
                   <option>Cargando géneros...</option>
@@ -418,7 +419,8 @@ export function CreateRequestModal({
                 placeholder="Ej. 126"
                 value={desiredBpm}
                 onChange={(e) => setDesiredBpm(e.target.value)}
-                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                autoComplete="off"
+                className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
               />
             </div>
           </div>
@@ -434,7 +436,7 @@ export function CreateRequestModal({
               placeholder="https://soundcloud.com/... o https://youtube.com/..."
               value={referenceUrl}
               onChange={(e) => setReferenceUrl(e.target.value)}
-              className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
             />
           </div>
 
@@ -449,7 +451,7 @@ export function CreateRequestModal({
               placeholder="Especifica estilo: Extended Club Mix, Intro acapella, Drop Tech House con sub-bass marcado..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full p-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 leading-relaxed"
+              className="w-full p-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150 leading-relaxed"
             />
           </div>
         </form>

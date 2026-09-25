@@ -4,13 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { apiFetch, ApiClientError } from '@/lib/api-client';
-import { Plan, PlanType, CreatePlanPayload } from '@/types/plan.types';
+import { Plan, PlanType } from '@/types/plan.types';
 import { GlobalHeader } from '@/components/layout/global-header';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
+import { CreatePlanModal } from '@/components/plans/create-plan-modal';
 import {
   Disc3,
   Plus,
@@ -20,7 +20,6 @@ import {
   ToggleLeft,
   ToggleRight,
   Layers,
-  X,
 } from 'lucide-react';
 
 const planTypeBadges: Record<PlanType, { label: string; className: string }> = {
@@ -47,20 +46,8 @@ export default function AdminPlansPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUpdatingId, setIsUpdatingId] = useState<string | null>(null);
 
-  // Estados Modal Creación de Plan
+  // Estado Modal Creación de Plan
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [formName, setFormName] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formType, setFormType] = useState<PlanType>('MONTHLY');
-  const [formPrice, setFormPrice] = useState('19.99');
-  const [formDuration, setFormDuration] = useState('30');
-  const [formCredits, setFormCredits] = useState('50');
-  const [formCanRequestRemix, setFormCanRequestRemix] = useState(false);
-  const [formBenefits, setFormBenefits] = useState(
-    'Descargas en formato WAV\nAcceso a stems multipista\nSoporte prioritario'
-  );
 
   // 1. Cargar planes administrativos memorizado con useCallback
   const loadAdminPlans = useCallback(async () => {
@@ -162,75 +149,6 @@ export default function AdminPlansPage() {
     }
   };
 
-  // 3. Manejo de Creación de Nuevo Plan (POST /api/v1/admin/plans)
-  const handleCreatePlan = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setCreateError(null);
-
-    const trimmedName = formName.trim();
-    const priceNum = parseFloat(formPrice);
-
-    if (!trimmedName) {
-      setCreateError('Por favor ingresa un nombre para el plan.');
-      return;
-    }
-
-    if (isNaN(priceNum) || priceNum < 0) {
-      setCreateError('Por favor ingresa un precio válido mayor o igual a 0.');
-      return;
-    }
-
-    const benefitsArray = formBenefits
-      .split('\n')
-      .map((b) => b.trim())
-      .filter((b) => b.length > 0);
-
-    if (benefitsArray.length === 0) {
-      setCreateError('Por favor añade al menos un beneficio para el plan.');
-      return;
-    }
-
-    const payload: CreatePlanPayload = {
-      name: trimmedName,
-      description: formDescription.trim() || undefined,
-      type: formType,
-      price: priceNum,
-      durationDays: formDuration ? parseInt(formDuration, 10) : undefined,
-      creditsIncluded: formCredits ? parseInt(formCredits, 10) : undefined,
-      benefits: benefitsArray,
-      canRequestRemix: formCanRequestRemix,
-      isActive: true,
-    };
-
-    try {
-      setIsCreating(true);
-      const createdPlan = await apiFetch<Plan>('/admin/plans', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        token: accessToken,
-      });
-
-      setPlans((prev) => [createdPlan, ...prev]);
-      setStatusMessage(`El plan "${createdPlan.name}" fue creado exitosamente.`);
-      setIsModalOpen(false);
-
-      // Reiniciar formulario
-      setFormName('');
-      setFormDescription('');
-      setFormPrice('19.99');
-      setFormCanRequestRemix(false);
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setCreateError(err.message || 'No fue posible crear el nuevo plan.');
-      } else if (err instanceof Error) {
-        setCreateError(err.message);
-      } else {
-        setCreateError('Error al crear el nuevo plan en el servidor.');
-      }
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
@@ -428,164 +346,16 @@ export default function AdminPlansPage() {
       </main>
 
       {/* Modal / Diálogo para Crear Plan */}
-      {isModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in"
-        >
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 id="modal-title" className="text-lg font-bold text-slate-900">
-                Crear Nuevo Plan de Suscripción
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                aria-label="Cerrar ventana de creación"
-              >
-                <X className="w-5 h-5" aria-hidden="true" />
-              </button>
-            </div>
-
-            {createError && (
-              <Alert variant="error">
-                <AlertTitle>No fue posible crear el plan</AlertTitle>
-                <AlertDescription>{createError}</AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleCreatePlan} className="space-y-4" noValidate>
-              <Input
-                id="plan-name"
-                name="name"
-                label="Nombre del plan"
-                placeholder="ej. Club Resident VIP"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                required
-              />
-
-              <Input
-                id="plan-description"
-                name="description"
-                label="Descripción breve"
-                placeholder="ej. Diseñado para sets nocturnos y cabinas profesionales."
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-              />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="plan-type" className="block text-sm font-medium text-slate-700">
-                    Tipo de facturación <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    id="plan-type"
-                    value={formType}
-                    onChange={(e) => setFormType(e.target.value as PlanType)}
-                    className="w-full min-h-[44px] px-3 py-2 text-sm text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                  >
-                    <option value="MONTHLY">Facturación Mensual</option>
-                    <option value="YEARLY">Facturación Anual</option>
-                    <option value="CREDITS_PACK">Paquete de Créditos</option>
-                  </select>
-                </div>
-
-                <Input
-                  id="plan-price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  label="Precio en USD ($)"
-                  placeholder="19.99"
-                  value={formPrice}
-                  onChange={(e) => setFormPrice(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  id="plan-duration"
-                  name="duration"
-                  type="number"
-                  min="1"
-                  label="Duración en días"
-                  placeholder="30"
-                  value={formDuration}
-                  onChange={(e) => setFormDuration(e.target.value)}
-                  hint="ej. 30 para mensual, 365 para anual."
-                />
-
-                <Input
-                  id="plan-credits"
-                  name="credits"
-                  type="number"
-                  min="1"
-                  label="Créditos de descarga"
-                  placeholder="50"
-                  value={formCredits}
-                  onChange={(e) => setFormCredits(e.target.value)}
-                  hint="Cantidad de pistas o stems."
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  id="plan-can-request"
-                  type="checkbox"
-                  checked={formCanRequestRemix}
-                  onChange={(e) => setFormCanRequestRemix(e.target.checked)}
-                  className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                />
-                <label htmlFor="plan-can-request" className="text-xs sm:text-sm font-medium text-slate-700">
-                  Permite solicitar remixes personalizados a medida
-                </label>
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="plan-benefits" className="block text-sm font-medium text-slate-700">
-                  Beneficios incluidos (uno por línea) <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  id="plan-benefits"
-                  rows={4}
-                  value={formBenefits}
-                  onChange={(e) => setFormBenefits(e.target.value)}
-                  placeholder="Audio Lossless sin compresión&#10;50 descargas mensuales&#10;Stems separados"
-                  className="w-full p-3 text-sm text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isCreating}
-                >
-                  Cancelar
-                </Button>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isCreating}
-                  loadingText="Creando plan..."
-                  id="submit-create-plan-btn"
-                >
-                  Crear plan
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal / Diálogo para Crear Plan */}
+      <CreatePlanModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={(createdPlan) => {
+          setPlans((prev) => [createdPlan, ...prev]);
+          setStatusMessage(`El plan "${createdPlan.name}" fue creado exitosamente.`);
+        }}
+        accessToken={accessToken}
+      />
     </div>
   );
 }

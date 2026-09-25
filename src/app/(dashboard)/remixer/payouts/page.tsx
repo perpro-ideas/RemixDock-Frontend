@@ -432,11 +432,11 @@ export default function RemixerPayoutsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-payout-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-in fade-in duration-200"
         >
           <div
             id="create-payout-modal-content"
-            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]"
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh] transform-gpu"
           >
             {/* Encabezado del Modal */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -489,9 +489,10 @@ export default function RemixerPayoutsPage() {
                     min={20}
                     max={availableBalance}
                     step={1}
+                    autoComplete="off"
                     required
                     disabled={isSubmitting}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150 min-h-[44px]"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
                     créditos
@@ -511,10 +512,10 @@ export default function RemixerPayoutsPage() {
 
               {/* Método de Cobro */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <span id="transfer-method-label" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Método de Transferencia *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
+                </span>
+                <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-labelledby="transfer-method-label">
                   <button
                     type="button"
                     id="method-paypal-btn"
@@ -522,7 +523,7 @@ export default function RemixerPayoutsPage() {
                       setMethod('PAYPAL');
                       if (!destination || destination.includes('IBAN')) setDestination(user?.email || '');
                     }}
-                    className={`p-3 rounded-xl border text-left transition-colors flex items-center gap-2.5 min-h-[44px] ${
+                    className={`p-3 rounded-xl border text-left transition-colors duration-150 flex items-center gap-2.5 min-h-[44px] ${
                       method === 'PAYPAL'
                         ? 'border-emerald-600 bg-emerald-50/40 text-emerald-950 font-bold'
                         : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
@@ -539,7 +540,7 @@ export default function RemixerPayoutsPage() {
                       setMethod('BANK_TRANSFER');
                       if (destination.includes('@')) setDestination('');
                     }}
-                    className={`p-3 rounded-xl border text-left transition-colors flex items-center gap-2.5 min-h-[44px] ${
+                    className={`p-3 rounded-xl border text-left transition-colors duration-150 flex items-center gap-2.5 min-h-[44px] ${
                       method === 'BANK_TRANSFER'
                         ? 'border-emerald-600 bg-emerald-50/40 text-emerald-950 font-bold'
                         : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
@@ -564,7 +565,7 @@ export default function RemixerPayoutsPage() {
                   placeholder={method === 'PAYPAL' ? 'tu-cuenta-paypal@ejemplo.com' : 'IBAN: ES00 0000 0000 0000 0000'}
                   required
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150 min-h-[44px]"
                 />
               </div>
 
@@ -580,7 +581,7 @@ export default function RemixerPayoutsPage() {
                   placeholder="Detalles adicionales sobre el cobro o facturación..."
                   rows={2}
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
                 />
               </div>
 

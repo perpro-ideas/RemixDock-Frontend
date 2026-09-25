@@ -140,12 +140,12 @@ export function AssignRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-assign-title"
     >
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900 transform-gpu">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/70">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-amber-600" />
@@ -191,7 +191,7 @@ export function AssignRequestModal({
               onChange={(e) => setRemixerId(e.target.value)}
               required
               disabled={isSubmitting || isLoadingRemixers}
-              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
             >
               <option value="">
                 {isLoadingRemixers ? 'Cargando productores...' : 'Selecciona un productor...'}
@@ -214,7 +214,7 @@ export function AssignRequestModal({
               placeholder="Notas de entrega, formato esperado (Extended Club + Stems)..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
             />
           </div>
 
@@ -323,12 +323,12 @@ export function RejectRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-reject-title"
     >
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900 transform-gpu">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-red-50/50">
           <div className="flex items-center gap-2 text-red-700">
             <XCircle className="w-4 h-4" />
@@ -372,7 +372,7 @@ export function RejectRequestModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors duration-150"
             />
           </div>
 
@@ -535,12 +535,12 @@ export function CompleteRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-complete-title"
     >
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden text-slate-900 transform-gpu">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-emerald-50/60">
           <div className="flex items-center gap-2 text-emerald-800">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -582,7 +582,7 @@ export function CompleteRequestModal({
               value={selectedTrackId}
               onChange={(e) => setSelectedTrackId(e.target.value)}
               disabled={isLoadingTracks}
-              className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="w-full h-10 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
             >
               {isLoadingTracks ? (
                 <option>Cargando pistas del catálogo...</option>
@@ -598,13 +598,13 @@ export function CompleteRequestModal({
 
           {/* Switch de Exclusividad del Remix */}
           <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-            <label className="flex items-start gap-3 cursor-pointer select-none">
+            <label htmlFor="isExclusiveSwitch" className="flex items-start gap-3 cursor-pointer select-none">
               <input
                 type="checkbox"
                 id="isExclusiveSwitch"
                 checked={isExclusive}
                 onChange={(e) => setIsExclusive(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
               />
               <div>
                 <span className="block text-sm font-semibold text-slate-900">
@@ -629,7 +629,7 @@ export function CompleteRequestModal({
               placeholder="Ej. Masterizado a -6dB, incluye stems de vocales y percusión limpia..."
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
-              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="w-full p-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150"
             />
           </div>
 

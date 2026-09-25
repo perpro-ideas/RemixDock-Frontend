@@ -402,7 +402,6 @@ function PricingContent() {
                 };
 
                 const isPopular = plan.type === 'MONTHLY' && plan.price > 15;
-                const isProClub = plan.name.toLowerCase().includes('pro club') || plan.id.includes('pro-monthly');
                 const isProducer = plan.name.toLowerCase().includes('producer') || plan.id.includes('producer');
                 const isStarter = plan.name.toLowerCase().includes('starter') || plan.id.includes('starter');
 
@@ -443,10 +442,10 @@ function PricingContent() {
 
                       {/* Badges de Peticiones de Remixes Específicos */}
                       <div className="pt-1">
-                        {isProClub ? (
+                        {plan.canRequestRemix ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Sparkles className="w-3 h-3" aria-hidden="true" />
-                            <span>2 peticiones de remixes/mes incluidas</span>
+                            <span>{plan.remixRequestsLimit || 2} peticiones de remixes al mes incluidas</span>
                           </span>
                         ) : isProducer ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">

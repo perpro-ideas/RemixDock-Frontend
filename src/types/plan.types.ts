@@ -10,6 +10,7 @@ export interface Plan {
   creditsIncluded?: number;
   benefits: string[];
   canRequestRemix: boolean;
+  remixRequestsLimit?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -24,6 +25,7 @@ export interface CreatePlanPayload {
   creditsIncluded?: number;
   benefits: string[];
   canRequestRemix?: boolean;
+  remixRequestsLimit?: number;
   isActive?: boolean;
 }
 
@@ -36,5 +38,6 @@ export interface UpdatePlanPayload {
   creditsIncluded?: number;
   benefits?: string[];
   canRequestRemix?: boolean;
+  remixRequestsLimit?: number;
   isActive?: boolean;
 }

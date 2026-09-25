@@ -57,7 +57,7 @@ export function TrackCard({ track, onViewDetails }: TrackCardProps) {
             <button
               type="button"
               onClick={handlePlayClick}
-              className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity min-h-[44px] min-w-[44px] ${
+              className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity min-h-[44px] min-w-[44px] ${
                 isCurrentPlaying ? 'opacity-100 text-white' : 'opacity-0 group-hover/cover:opacity-100 text-white'
               }`}
               aria-label={

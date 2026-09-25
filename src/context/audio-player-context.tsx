@@ -6,7 +6,6 @@ import { Track } from '@/types/tracks.types';
 interface AudioPlayerContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
-  currentTime: number;
   duration: number;
   volume: number;
   isMuted: boolean;
@@ -20,7 +19,14 @@ interface AudioPlayerContextType {
   stop: () => void;
 }
 
+export interface AudioPlayerProgressContextType {
+  currentTime: number;
+  duration: number;
+  progressPercent: number;
+}
+
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
+const AudioPlayerProgressContext = createContext<AudioPlayerProgressContextType | undefined>(undefined);
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
@@ -199,26 +205,56 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setDuration(0);
   }, []);
 
+  // Valor memorizado para controles de reproducción (estable, NO re-renderiza con timeupdate)
+  const playerValue = React.useMemo<AudioPlayerContextType>(
+    () => ({
+      currentTrack,
+      isPlaying,
+      duration,
+      volume,
+      isMuted,
+      isLoadingAudio,
+      play,
+      pause,
+      togglePlay,
+      seek,
+      setVolume,
+      toggleMute,
+      stop,
+    }),
+    [
+      currentTrack,
+      isPlaying,
+      duration,
+      volume,
+      isMuted,
+      isLoadingAudio,
+      play,
+      pause,
+      togglePlay,
+      seek,
+      setVolume,
+      toggleMute,
+      stop,
+    ]
+  );
+
+  // Valor reactivo aislado para progreso y scrubber de audio
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressValue = React.useMemo<AudioPlayerProgressContextType>(
+    () => ({
+      currentTime,
+      duration,
+      progressPercent,
+    }),
+    [currentTime, duration, progressPercent]
+  );
+
   return (
-    <AudioPlayerContext.Provider
-      value={{
-        currentTrack,
-        isPlaying,
-        currentTime,
-        duration,
-        volume,
-        isMuted,
-        isLoadingAudio,
-        play,
-        pause,
-        togglePlay,
-        seek,
-        setVolume,
-        toggleMute,
-        stop,
-      }}
-    >
-      {children}
+    <AudioPlayerContext.Provider value={playerValue}>
+      <AudioPlayerProgressContext.Provider value={progressValue}>
+        {children}
+      </AudioPlayerProgressContext.Provider>
     </AudioPlayerContext.Provider>
   );
 }
@@ -227,6 +263,14 @@ export function useAudioPlayer(): AudioPlayerContextType {
   const context = useContext(AudioPlayerContext);
   if (!context) {
     throw new Error('useAudioPlayer debe utilizarse dentro de un AudioPlayerProvider');
+  }
+  return context;
+}
+
+export function useAudioProgress(): AudioPlayerProgressContextType {
+  const context = useContext(AudioPlayerProgressContext);
+  if (!context) {
+    throw new Error('useAudioProgress debe utilizarse dentro de un AudioPlayerProvider');
   }
   return context;
 }

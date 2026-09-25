@@ -56,11 +56,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-describedby={describedBy}
             className={cn(
               'w-full min-h-[44px] px-3.5 py-2.5 text-sm text-slate-900 bg-white border rounded-xl',
-              'placeholder:text-slate-400 transition-all',
-              'focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10',
+              'placeholder:text-slate-400 transition-colors duration-150',
+              'focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent',
               'disabled:opacity-60 disabled:bg-slate-50 disabled:cursor-not-allowed',
               error
-                ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10 pr-10'
+                ? 'border-rose-500 focus:ring-rose-500 focus:border-transparent pr-10'
                 : 'border-slate-200 hover:border-slate-300',
               className
             )}

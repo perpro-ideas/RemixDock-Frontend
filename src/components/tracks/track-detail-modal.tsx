@@ -338,7 +338,7 @@ export function TrackDetailModal({ track, isOpen, onClose, isAcquired: isAcquire
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 transition-opacity animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="track-detail-modal-title"
@@ -350,7 +350,7 @@ export function TrackDetailModal({ track, isOpen, onClose, isAcquired: isAcquire
       }}
     >
       <div
-        className="relative w-full max-w-xl bg-white rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col my-auto"
+        className="relative w-full max-w-xl bg-white rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col my-auto transform-gpu"
         id="track-detail-modal-content"
       >
         {/* Encabezado del Modal */}

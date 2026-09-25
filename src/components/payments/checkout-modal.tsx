@@ -69,7 +69,7 @@ export function CheckoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 transition-opacity animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-modal-title"
@@ -81,7 +81,7 @@ export function CheckoutModal({
       }}
     >
       <div
-        className="relative w-full max-w-lg bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col my-auto"
+        className="relative w-full max-w-lg bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col my-auto transform-gpu"
         id="checkout-modal-content"
       >
         {/* Encabezado del Modal */}

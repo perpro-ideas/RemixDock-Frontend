@@ -277,14 +277,14 @@ export function TrackAdminModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-150 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="track-admin-modal-title"
       id="track-admin-modal"
     >
       <div
-        className="bg-white border border-slate-200/90 rounded-2xl shadow-xl w-full max-w-3xl my-auto max-h-[92vh] flex flex-col text-slate-900 overflow-hidden"
+        className="bg-white border border-slate-200/90 rounded-2xl shadow-xl w-full max-w-3xl my-auto max-h-[92vh] flex flex-col text-slate-900 overflow-hidden transform-gpu"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera del Modal */}

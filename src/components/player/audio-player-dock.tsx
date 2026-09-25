@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAudioPlayer } from '@/context/audio-player-context';
+import { useAudioPlayer, useAudioProgress } from '@/context/audio-player-context';
 import {
   Play,
   Pause,
@@ -26,8 +26,6 @@ export function AudioPlayerDock() {
   const {
     currentTrack,
     isPlaying,
-    currentTime,
-    duration,
     volume,
     isMuted,
     isLoadingAudio,
@@ -38,11 +36,11 @@ export function AudioPlayerDock() {
     stop,
   } = useAudioPlayer();
 
+  const { currentTime, duration, progressPercent } = useAudioProgress();
+
   if (!currentTrack) {
     return null;
   }
-
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const targetSeconds = parseFloat(e.target.value);
@@ -61,12 +59,12 @@ export function AudioPlayerDock() {
     <aside
       aria-label="Reproductor de audio"
       id="audio-player-dock"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-2xl transition-all duration-300 animate-in slide-in-from-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-2xl transition-transform duration-300 animate-in slide-in-from-bottom transform-gpu"
     >
       {/* Barra de progreso táctil superior para móvil */}
       <div className="relative w-full h-1.5 bg-slate-100 cursor-pointer group">
         <div
-          className="h-full bg-emerald-600 transition-all duration-100"
+          className="h-full bg-emerald-600 transition-[width] duration-100 ease-linear"
           style={{ width: `${progressPercent}%` }}
         />
         <input

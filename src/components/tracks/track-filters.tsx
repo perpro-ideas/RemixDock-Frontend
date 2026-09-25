@@ -42,7 +42,7 @@ export function TrackFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por pista, artista o remixer..."
-            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all min-h-[44px]"
+            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white transition-colors duration-150 min-h-[44px]"
             id="track-search-input"
             aria-label="Buscar pistas por título, artista o remixer"
           />
@@ -153,7 +153,7 @@ export function TrackFilters({
               id="key-select"
               value={selectedKey || ''}
               onChange={(e) => onSelectKey(e.target.value ? e.target.value : null)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all min-h-[44px]"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white transition-colors duration-150 min-h-[44px]"
               aria-label="Filtrar por clave armónica Camelot"
             >
               <option value="">Todas las tonalidades</option>

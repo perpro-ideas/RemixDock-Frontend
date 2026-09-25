@@ -453,11 +453,11 @@ export default function AdminPayoutsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="audit-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-in fade-in duration-200"
         >
           <div
             id="audit-payout-modal-content"
-            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]"
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh] transform-gpu"
           >
             {/* Encabezado */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -531,7 +531,7 @@ export default function AdminPayoutsPage() {
                       type="button"
                       id={`status-option-${option.id}`}
                       onClick={() => setTargetStatus(option.id as PayoutStatus)}
-                      className={`p-2.5 rounded-xl border text-left transition-colors min-h-[44px] ${
+                      className={`p-2.5 rounded-xl border text-left transition-colors duration-150 min-h-[44px] ${
                         targetStatus === option.id
                           ? 'border-emerald-600 bg-emerald-50/50 text-emerald-950 font-bold'
                           : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
@@ -558,7 +558,7 @@ export default function AdminPayoutsPage() {
                     rows={2}
                     required
                     disabled={isAuditing}
-                    className="w-full px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/30 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/30 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors duration-150"
                   />
                   <p className="text-[11px] text-slate-500">
                     Este mensaje se mostrará directamente en el panel del remixer para que pueda corregir los datos.
@@ -578,7 +578,7 @@ export default function AdminPayoutsPage() {
                   onChange={(e) => setInternalNotes(e.target.value)}
                   placeholder="ID de transacción bancaria / referencia PayPal..."
                   disabled={isAuditing}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-150 min-h-[44px]"
                 />
               </div>
 
